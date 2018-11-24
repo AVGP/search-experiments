@@ -1,0 +1,22 @@
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://experiments.geekonaut.de</loc>
+  </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/paginated-kittens</loc>
+  </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/paginated-kittens/1</loc>
+  </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/paginated-kittens/2</loc>
+  </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/paginated-kittens/3</loc>
+  </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/paginated-kittens/4</loc>
+  </url>
+
+</urlset>
+
