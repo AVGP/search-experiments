@@ -17,6 +17,8 @@
   <url>
     <loc>https://experiments.geekonaut.de/paginated-kittens/4</loc>
   </url>
-
+  <url>
+    <loc>https://experiments.geekonaut.de/indexing/noscript</loc>
+  </url>
 </urlset>
 
