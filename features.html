@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Detect browser features</title>
+</head>
+<body>
+  <h1>Detect available browser features</h1>
+  <ul>
+    <li id="intersection-observer">IntersectionObserver</li>
+    <li id="web-components-v0">Web Components v0</li>
+    <li id="web-components-v1">Web Components v1</li>
+  </ul>
+  <script>
+    if (IntersectionObserver) {
+      document.getElementById("intersection-observer").classList.add('yes');
+    }
+
+    if (document.registerElement) {
+      document.getElementById("web-components-v1").classList.add('yes');
+    }
+
+    if (window.customElements) {
+      document.getElementById("web-components-v1").classList.add('yes');
+    }  
+  </script>
+</body>
+</html>
