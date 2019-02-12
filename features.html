@@ -31,9 +31,13 @@
     <li id="web-components-v1">Web Components v1</li>
     <li id="intersection-observer">IntersectionObserver</li>
     <li id="fetch">fetch()</li>
+    <li id="service-worker">Service worker</li>
+    <li id="local-storage">Local Storage (may get declined)</li>
     <li id="request-animation-frame">requestAnimationFrame</li>
     <li id="request-idle-callback">requestIdleCallback</li>
     <li id="visibility-state">visibilityState</li>
+    <li id="css-font-loading-api">CSS Font Loading API</li>
+    <li id="network-info-api">Network Information API</li>
     <li id="webxr-device-api">WebXR device API</li>
     <li id="webvr-1.1">WebVR 1.1 API</li>
   </ul>
@@ -58,6 +62,14 @@
       document.getElementById("fetch").classList.add('yes');
     }
 
+    if ('ServiceWorker' in window) {
+      document.getElementById("service-worker").classList.add('yes');
+    }
+
+    if (localStorage) {
+      document.getElementById("local-storage").classList.add('yes');      
+    }
+
     if (requestAnimationFrame) {
       document.getElementById("request-animation-frame").classList.add('yes');
     }
@@ -68,6 +80,15 @@
 
     if (document.visibilityState) {
       document.getElementById("visibility-state").classList.add('yes');
+    }
+
+    if (document.fonts) {
+      document.getElementById("css-font-loading-api").classList.add('yes');
+    }
+
+    if (navigator.connection) {
+      document.getElementById("network-info-api").classList.add('yes');
+      console.log(navigator.connection.effectiveType)
     }
 
     if (navigator.getVRDisplays) {
