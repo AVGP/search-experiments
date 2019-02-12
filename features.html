@@ -38,7 +38,7 @@
     <li id="webvr-1.1">WebVR 1.1 API</li>
   </ul>
   <script>
-    if (IntersectionObserver) {
+    if ('IntersectionObserver' in window) {
       document.getElementById("intersection-observer").classList.add('yes');
     }
 
@@ -50,7 +50,7 @@
       document.getElementById("web-components-v1").classList.add('yes');
     }
 
-    if (Symbol) {
+    if ('Symbol' in window) {
       document.getElementById("es6").classList.add('yes');
     }
 
