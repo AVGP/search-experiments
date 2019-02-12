@@ -8,6 +8,11 @@
       padding: 1em;
     }
 
+    h1 { text-align: center; }
+    h2 { color: red; }
+
+    aside { border: 1px solid red; padding: 0.5em 0.25em; margin: 0.25em; width: 50%; text-align: center; margin-left: 25%; }
+
     ul { margin: 0; padding: 0; }
 
     li {
@@ -25,19 +30,24 @@
 </head>
 <body>
   <h1>Detect available browser features</h1>
+  <aside>
+    <h2>Disclaimer</h2>
+    <p>This page tests presence of certain interfaces, not if they actually work :)</p>
+  </aside>
+
   <ul>
     <li id="es6">ES6</li>
     <li id="web-components-v0">Web Components v0</li>
     <li id="web-components-v1">Web Components v1</li>
     <li id="intersection-observer">IntersectionObserver</li>
     <li id="fetch">fetch()</li>
-    <li id="service-worker">Service worker</li>
+    <li id="service-worker">Service worker (HTTPS only, may fail)</li>
     <li id="local-storage">Local Storage (may get declined)</li>
     <li id="request-animation-frame">requestAnimationFrame</li>
     <li id="request-idle-callback">requestIdleCallback</li>
-    <li id="visibility-state">visibilityState</li>
+    <li id="visibility-state">visibilityState (might not be accurate)</li>
     <li id="css-font-loading-api">CSS Font Loading API</li>
-    <li id="network-info-api">Network Information API</li>
+    <li id="network-info-api">Network Information API (might not be accurate)</li>
     <li id="webxr-device-api">WebXR device API</li>
     <li id="webvr-1.1">WebVR 1.1 API</li>
   </ul>
