@@ -26,9 +26,16 @@
 <body>
   <h1>Detect available browser features</h1>
   <ul>
-    <li id="intersection-observer">IntersectionObserver</li>
+    <li id="es6">ES6</li>
     <li id="web-components-v0">Web Components v0</li>
     <li id="web-components-v1">Web Components v1</li>
+    <li id="intersection-observer">IntersectionObserver</li>
+    <li id="fetch">fetch()</li>
+    <li id="request-animation-frame">requestAnimationFrame</li>
+    <li id="request-idle-callback">requestIdleCallback</li>
+    <li id="visibility-state">visibilityState</li>
+    <li id="webxr-device-api">WebXR device API</li>
+    <li id="webvr-1.1">WebVR 1.1 API</li>
   </ul>
   <script>
     if (IntersectionObserver) {
@@ -41,7 +48,36 @@
 
     if (window.customElements) {
       document.getElementById("web-components-v1").classList.add('yes');
-    }  
+    }
+
+    if (Symbol) {
+      document.getElementById("es6").classList.add('yes');
+    }
+
+    if (window.fetch) {
+      document.getElementById("fetch").classList.add('yes');
+    }
+
+    if (requestAnimationFrame) {
+      document.getElementById("request-animation-frame").classList.add('yes');
+    }
+
+    if (requestIdleCallback) {
+      document.getElementById("request-idle-callback").classList.add('yes');
+    }
+
+    if (document.visibilityState) {
+      document.getElementById("visibility-state").classList.add('yes');
+    }
+
+    if (navigator.getVRDisplays) {
+      document.getElementById("web-vr-1.1").classList.add('yes');
+    }
+
+    if (navigator.xr) {
+      document.getElementById("web-xr-device-api").classList.add('yes');
+    }
+
   </script>
 </body>
 </html>
