@@ -64,7 +64,7 @@
       document.getElementById("web-components-v1").classList.add('yes');
     }
 
-    if ('Symbol' in window) {
+    if ('Symbol' in window && checkES6()) {
       document.getElementById("es6").classList.add('yes');
     }
 
@@ -107,6 +107,15 @@
 
     if (navigator.xr) {
       document.getElementById("webxr-device-api").classList.add('yes');
+    }
+
+    function checkES6() {
+      try {
+        eval('const test = () => { 1 + 1 }')
+        return true
+      } catch(e) {
+        return false
+      }
     }
 
   </script>
