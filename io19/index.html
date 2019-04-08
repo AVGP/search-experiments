@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Catbin.js</title>
+</head>
+<body>
+  <div id='app' />
+  <script>
+  function render() {
+    let elem = document.getElementById('app');
+    let img = document.createElement('img');
+    let text = document.createTextNode("The catbin.js cat of the day is Mittens!");
+    img.src = 'emoji_u1f431.png';
+    elem.appendChild(img);
+    elem.appendChild(text);
+  }
+  render();
+  </script>
+</body>
+</html>
