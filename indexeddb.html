@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <title>IndexedDB sample</title>
+  <style>
+  body { font-size: 5em; }
+  </style>
+</head>
+<body>
+  <script src="https://unpkg.com/idb@4.0.3/build/iife/index-min.js"></script>
+  <script>
+(async function() {
+  'use strict';
+
+  //check for support
+  if (!('indexedDB' in window)) {
+    console.log('This browser doesn\'t support IndexedDB');
+    return;
+  }
+
+  var dbPromise = idb.openDB('test-db', 1, {upgrade: function(upgradeDb) {
+    console.log('upgrade');
+    if (!upgradeDb.objectStoreNames.contains('notes')) {
+      var notesOS = upgradeDb.createObjectStore('notes');
+    }
+  }});
+  const db = await dbPromise;
+  const txn = db.transaction('notes', 'readwrite');
+  const store = txn.objectStore('notes');
+  store.add('stored data!', 'data');
+  await txn.complete;
+  
+  const txn2 = db.transaction('notes');
+  const store2 = txn2.objectStore('notes');
+  const val = await store.get('data') || 'No data stored :(';
+  document.body.textContent = val;
+})();  
+  </script>
+</body>
+</html>
