@@ -115,9 +115,9 @@
       document.getElementById("webgl").classList.add('yes');
     }
     
-    if (await checkWebSockets()) {
+    checkWebSockets().then(function() {
       document.getElementById("websockets").classList.add('yes');
-    }
+    });
     
     function checkES6() {
       try {
