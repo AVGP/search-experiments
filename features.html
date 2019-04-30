@@ -50,6 +50,8 @@
     <li id="network-info-api">Network Information API (might not be accurate)</li>
     <li id="webxr-device-api">WebXR device API</li>
     <li id="webvr-1.1">WebVR 1.1 API</li>
+    <li id="webgl">WebGL</li>
+    <li id="websockets">WebSocket</li>
   </ul>
   <script>
     if ('IntersectionObserver' in window) {
@@ -109,6 +111,14 @@
       document.getElementById("webxr-device-api").classList.add('yes');
     }
 
+    if (checkWebGL()) {
+      document.getElementById("webgl").classList.add('yes');
+    }
+    
+    if (await checkWebSockets()) {
+      document.getElementById("websockets").classList.add('yes');
+    }
+    
     function checkES6() {
       try {
         eval('const test = () => { 1 + 1 }')
@@ -118,6 +128,25 @@
       }
     }
 
+    function checkWebGL() {
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      return (gl && gl instanceof WebGLRenderingContext);
+    }
+    
+    async function checkWebSockets() {
+      return new Promise(function(resolve, reject) {
+        try {
+          var ws = new WebSocket('wss://echo.websocket.org');
+          ws.onopen = resolve;
+          ws.onerror = reject;
+        } catch (e) {
+          reject();
+        }
+      });  
+    }
+    
   </script>
 </body>
 </html>
