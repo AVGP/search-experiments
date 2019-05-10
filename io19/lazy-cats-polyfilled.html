@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <title>Catbin.js - All the cat pics you'll ever need</title>
+  <meta name="viewport" content="width=device-width" />
+  <meta name="description" content="A gallery of the best, cutest cat pictures in the entire internet" />
+  <style>
+    ul {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      list-style-type: none;   
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      min-width: 150px;
+      height: 150px;
+      padding: 1em;
+    }
+
+    li img {
+      width: 100%;
+      height: 100%;
+      background-image: url('https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/google/146/cat-face_1f431.png');
+      background-repeat: no-repeat;
+      background-size: contain; /* for the placeholder */
+      background-position: center;
+      object-fit: cover; /* for the actual image */
+    }
+
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<h1>Catbin.js - all the cat pics you'll ever need!</h1>
+<p>Bask in the glory of the cats below!</p>
+
+<ul></ul>
+
+<template>
+<li>
+  <img>
+</li>
+</template>
+
+<script src="https://avgp.github.io/lazyloading-experiments/intersection-observer/polyfill.js"></script>
+<script>
+"use strict";
+
+var apiUrl = 'https://cat-api-237122.appspot.com';
+var tpl = document.querySelector('template').content;
+var container = document.querySelector('ul');
+
+function loadImage(imgId) {
+  var li = document.importNode(tpl, true);
+  var img = li.querySelector('img');
+  img.dataset.src = 'https://cat-api-237122.appspot.com/img/' + imgId + '.jpg';
+  // placeholder
+  img.src = '';
+  container.appendChild(li);
+}
+
+for(var i=1; i<61; i++) loadImage(i);
+
+function lazyLoad(entries) {
+  entries.forEach(function(entry) {
+    var elem = entry.target;
+    if(!elem.hasAttribute('data-src') || !entry.isIntersecting) return;
+
+    elem.setAttribute('src', elem.getAttribute('data-src'));
+    elem.removeAttribute('data-src');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  var observer = new IntersectionObserver(lazyLoad, {
+    threshold: 0.5
+  });
+
+  var images = document.querySelectorAll('img');
+  for(var i=0; i<images.length; i++) {
+    observer.observe(images[i]);
+  }
+});
+</script>
+</body>
+</html>
