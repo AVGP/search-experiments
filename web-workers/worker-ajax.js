@@ -9,7 +9,10 @@ self.onmessage = function(evt) {
 fetch('https://cat-api-237122.appspot.com/cats/')
 .then(function (res) { return res.json(); })
 .then(function (cats) {
+  // immediately after the promise
+  self.postMessage({type: 'img', url: 'https://cat-api-237122.appspot.com/img/13.jpg'});     
   cats.forEach(function (cat, index) {
+    // deferred
     setTimeout(function() {
       self.postMessage({type: 'img', url: 'https://cat-api-237122.appspot.com/' + cat.url});     
     }, index * 1500);
