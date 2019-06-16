@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Search Experiments: Storing data in Cache</title>
+  </head>
+  <body>
+    <p>Writing to cache...</p>
+    <script>
+      // Open a custom cache
+      caches.open('my-cache').then(function (cache) {
+        console.log('Cache open!');
+        cache.put('/cache-api/cached-data', new Response("Hello World!"))
+        .then(function() { console.log('Success!'); })
+        .catch(function(err) { console.log('Failed writing to cache :(', err); });
+      }).catch(function(err) {
+        console.log('Failed to access the cache :( ', err);
+      });
+    </script>
+  </body>
+</html>

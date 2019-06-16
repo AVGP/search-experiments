@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Search Experiments: Retrieving data from Cache</title>
+  </head>
+  <body>
+    <p>Reading from cache...</p>
+    <script>
+      // Open a custom cache
+      caches.open('my-cache').then(function (cache) {
+        console.log('Cache open!');
+        cache.match('/cache-api/cached-data')
+        .then(function(res) { return res.text() })
+        .then(function(data) {
+          console.log('Data in cache: ', data);
+        })
+        .catch(function(err) { console.log('Failed reading from cache :(', err); });
+      }).catch(function(err) {
+        console.log('Failed to access the cache :( ', err);
+      });
+
+      fetch('/cache-api/cached-data').then(function(response) {
+        return response.text();
+      }).then(function(data) {
+        console.log('Successfully fetch\'d the data :)', data);
+      }).catch(function(err) {
+        console.log('Cannot fetch :(', err);
+      });
+    </script>
+  </body>
+</html>
