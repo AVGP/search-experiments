@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <title>Redirects and Googlebot</title>
+  <meta name="description" content="Googlebot supports redirects and so do the testing tools. There are many ways of doing redirects. Let's look at a few of them!">
+</head>
+<body>
+  <h1>Redirects and Googlebot</h1>
+  <p>Googlebot supports redirects and so do the testing tools. There are many ways of doing redirects. Let's look at a few of them!</p>
+  
+  <h2>Server redirects</h2>
+  <p>
+    One of the first things Googlebot does is making an HTTP request to your server.
+    If your server responds with a redirect (HTTP code 301 or 302) and a new target URL, 
+    Googlebot will receive this response and issue a new request to the URL that was in the response.
+  </p>
+  
+  <h2>JavaScript redirects</h2>
+  <p>
+    Alternatively, your server can respond with some HTML that contains JavaScript.
+    The JavaScript can then use <code>window.location.href</code> to initiate a redirection.
+  </p>
+</body>
+</html>
