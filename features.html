@@ -37,6 +37,7 @@
 
   <ul>
     <li id="es6">ES6</li>
+    <li id="promise-all-settled">Promise.allSettled</li>
     <li id="web-components-v0">Web Components v0</li>
     <li id="web-components-v1">Web Components v1</li>
     <li id="intersection-observer">IntersectionObserver</li>
@@ -108,6 +109,11 @@
     if (navigator.xr) {
       document.getElementById("webxr-device-api").classList.add('yes');
     }
+    
+    if (Promise.allSettled) {
+      document.getElementById("promise-all-settled").classList.add('yes');
+    }
+    
     if (checkWebGL()) {
       document.getElementById("webgl").classList.add('yes');
     }
