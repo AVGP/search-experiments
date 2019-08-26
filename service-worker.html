@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Hello!</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- import the webpage's stylesheet -->
+    <style>
+      body {
+        font-family: sans-serif;
+      }
+      h1 { font-size: 2em;}
+      p {
+        font-size: 1.5em;
+        padding: 1rem;
+      }
+      
+      p.yes {
+        border: dashed 2px #080;
+      }
+      
+      p.no {
+        border: dashed 2px #800;
+      }
+    </style>
+  </head>  
+  <body>
+    <h1>Do we have (working) service workers?</h1>
+    <p></p>
+    <script>
+      const p = document.querySelector('p');
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(function success() {
+          p.textContent = 'YES!';
+          p.classList.add('yes');
+        }, function error(err) {
+          p.textContent = 'Yes, but actually no. Registration was rejected';
+          p.classList.add('no');
+          console.log('error', err)
+        }).catch(function except(e) {
+          console.log('exception', e)
+          p.textContent = 'Yes, but actually no. Registration threw an exception';
+          p.classList.add('no');          
+        });
+      } else {
+        p.textContent = 'No. No support.';
+        p.classList.add('no');        
+      }
+    </script>
+  </body>
+</html>
