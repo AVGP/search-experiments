@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Hello!</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://unpkg.com/@webcomponents/webcomponentsjs/entrypoints/webcomponents-sd-ce-index.js"></script>
+    <script>
+class MySyncContent extends HTMLElement {
+  constructor() {
+    super();
+    
+    this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    let p = document.createElement('p');
+    p.innerText = 'Hello World, this is sync content';
+    this.shadowRoot.appendChild(p);
+  }
+}
+
+class MyAsyncContent extends HTMLElement {
+  constructor() {
+    super();
+    
+    this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    fetch('https://cat-api-237122.appspot.com/')
+    .then(res => res.json())
+    .then(cats => {
+      let img = new Image();
+      img.src = 'https://cat-api-237122.appspot.com' + cats[0].url;
+      img.setAttribute('alt', cats[0].name);
+      this.shadowRoot.appendChild(img);
+    }) 
+  }
+}
+
+class MySlottedContent extends HTMLElement {
+  constructor() {
+    super();
+    
+    this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    let p = document.createElement('p');
+    p.innerHTML = 'Here is the projected content: <slot></slot>';
+    this.shadowRoot.appendChild(p);
+  }
+}
+
+window.customElements.define('my-sync-content', MySyncContent);
+window.customElements.define('my-slotted-content', MySlottedContent);
+window.customElements.define('my-async-content', MyAsyncContent);
+
+    </script>
+  </head>  
+  <body>
+    <h1>Hi there!</h1>
+    
+    <p>
+      I'm your cool new webpage. Made with <a href="https://glitch.com">Glitch</a>!
+    </p>
+
+    <my-sync-content></my-sync-content>
+    <my-sync-content>Is this showing up in WRS?</my-sync-content>
+    <my-slotted-content>Slotted Content FTW</my-slotted-content>
+    <my-async-content></my-async-content>
+  </body>
+</html>
