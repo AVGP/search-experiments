@@ -37,6 +37,7 @@
 
   <ul>
     <li id="es6">ES6</li>
+    <li id="register-property">CSS.registerProperty</li>
     <li id="promise-all-settled">Promise.allSettled</li>
     <li id="web-components-v0">Web Components v0</li>
     <li id="web-components-v1">Web Components v1</li>
@@ -57,6 +58,10 @@
   <script>
     "use strict"
 
+    if (window.CSS.registerProperty) {
+      document.getElementById("register-property").classList.add('yes');
+    }
+    
     if ('IntersectionObserver' in window) {
       document.getElementById("intersection-observer").classList.add('yes');
     }
