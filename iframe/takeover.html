@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+  <title>may I take the wheel?</title>
+</head>
+<body>
+  <script>
+    /* inside the iframe, this is harmless... */
+    const h1 = document.querySelector('h1');
+    h1.textContent = 'TAKEOVER';
+
+    const p = document.createElement('p');
+    p.textContent = 'HELLO THERE, OTHER DOCUMENT >:)';
+    p.style.color = 'red';
+    p.style.fontWeight = 'bold';
+  </script>
+</body>
+</html>
