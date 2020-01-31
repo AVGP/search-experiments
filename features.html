@@ -60,7 +60,7 @@
   <script>
     "use strict"
 
-    document.getElementByID('ua').textContent = 'User Agent: ' + window.navigator.userAgent;
+    document.getElementById('ua').textContent = 'User Agent: ' + window.navigator.userAgent;
     
     if (window.CSS.registerProperty) {
       document.getElementById("register-property").classList.add('yes');
