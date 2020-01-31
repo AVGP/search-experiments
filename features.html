@@ -35,6 +35,8 @@
     <p>This page tests presence of certain interfaces, not if they actually work :)</p>
   </aside>
 
+  <p id="ua"></p>
+  
   <ul>
     <li id="es6">ES6</li>
     <li id="register-property">CSS.registerProperty</li>
@@ -58,6 +60,8 @@
   <script>
     "use strict"
 
+    document.getElementByID('ua').textContent = 'User Agent: ' + window.navigator.userAgent;
+    
     if (window.CSS.registerProperty) {
       document.getElementById("register-property").classList.add('yes');
     }
