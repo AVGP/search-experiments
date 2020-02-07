@@ -15,5 +15,6 @@ for(var i=0; i<11;i++) {
       console.log('[Worker] Sent img #' + index);
       self.postMessage({ type: 'img', url: 'https://cat-api-237122.appspot.com/img/' + (index + 1) + '.jpg'});     
     }, index * waitMS);
+    console.log('Using delay ' + waitMS);
   })(i);
 }
