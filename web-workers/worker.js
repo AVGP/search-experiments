@@ -1,4 +1,4 @@
-var waitMS = 1000;
+var waitMS = 100;
 // console.log a message that was received from the main thread
 self.onmessage = function(evt) {
   console.log('[Worker] received msg', evt.data);
