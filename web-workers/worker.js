@@ -1,6 +1,8 @@
+var waitMS = 100;
 // console.log a message that was received from the main thread
 self.onmessage = function(evt) {
   console.log('[Worker] received msg', evt.data);
+  waitMS = evt.data.delay;
   self.postMessage({type: 'echo', msg: evt.data});
 }
 
@@ -12,6 +14,6 @@ for(var i=0; i<11;i++) {
     setTimeout(function() {
       console.log('[Worker] Sent img #' + index);
       self.postMessage({ type: 'img', url: 'https://cat-api-237122.appspot.com/img/' + (index + 1) + '.jpg'});     
-    }, index * 100);
+    }, index * waitMS);
   })(i);
 }
