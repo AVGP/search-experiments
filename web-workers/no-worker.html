@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Hello!</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="stylesheet" href="style.css">
+  </head>  
+  <body>
+    <h1>Hi there!</h1>
+    <p>
+      This page is being populated by a periodically scheduled JavaScript. The resulting images are then appended below.
+    </p>
+    <ul></ul>
+    <script>
+    // globals
+    var delay = parseInt(new URLSearchParameters(window.location.search).get(delay) || '100', 10)
+    var list = document.querySelector('ul');
+
+    // and action!
+    for(var i=0; i<11; i++) {
+      (function() {
+        setTimeout(function() { appendImage('https://cat-api-237122.appspot.com/img/' + (index + 1) + '.jpg', list) }, i * delay)
+      })();
+    }
+
+    // helper
+    function appendImage(imgSrc, list) {
+      var item = document.createElement('li');
+      var img = new Image();
+      img.src = imgSrc;
+      item.appendChild(img);
+      list.appendChild(item);  
+    }    
+    </script>
+    
+  </body>
+</html>
