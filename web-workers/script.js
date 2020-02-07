@@ -12,7 +12,7 @@ if (window.Worker) {
     }
   });
   console.log('[Main] Set up worker', worker);
-  worker.postMessage('Hello, worker!', {delay: delay });
+  worker.postMessage({msg: 'Hello, worker!', delay: delay });
 } else {
   console.error('Workers not supported');
   document.querySelector('p').textContent = 'Sorry, your browser does not support Web Workers :(';
