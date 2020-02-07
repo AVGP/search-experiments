@@ -1,8 +1,8 @@
 var list = document.querySelector('ul');
 
 if (window.Worker) {
-  var delay = new URLSearchParams(window.location.search).get('delay');
-  var worker = new Worker('worker.js?cachebust=' + new Date().getTime() + '&delay=' + delay);  
+  var delay = parseInt(new URLSearchParams(window.location.search).get('delay'), 10);
+  var worker = new Worker('worker.js?cachebust=' + new Date().getTime());  
   worker.addEventListener('message', function handleMsg(evt) {
     if (evt.data.type === 'img') {
       console.log('[Main] Image received. URL to load: ' + evt.data.url);
@@ -12,7 +12,7 @@ if (window.Worker) {
     }
   });
   console.log('[Main] Set up worker', worker);
-  worker.postMessage('Hello, worker!');
+  worker.postMessage('Hello, worker!', {delay: delay });
 } else {
   console.error('Workers not supported');
   document.querySelector('p').textContent = 'Sorry, your browser does not support Web Workers :(';
