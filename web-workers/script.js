@@ -1,15 +1,16 @@
 var list = document.querySelector('ul');
 
 if (window.Worker) {
-  var worker = new Worker('worker.js');  
+  var worker = new Worker('worker.js?cachebust=' + new Date());  
   worker.addEventListener('message', function handleMsg(evt) {
+    console.log('[Main] Image received. ' + evt.data.url);
     if (evt.data.type === 'img') {
       appendImage(evt.data.url, list);      
     } else {
       console.log('Received from worker: ', evt.data);
     }
   });
-  console.log('Set up worker', worker);
+  console.log('[Main] Set up worker', worker);
   worker.postMessage('Hello, worker!');
 } else {
   console.error('Workers not supported');
