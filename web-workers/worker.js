@@ -8,7 +8,7 @@ self.onmessage = function(evt) {
   for(var i=0; i<5;i++) {
     (function(index) {
       setTimeout(function() {
-        console.log('[Worker] Sent img #' + index);
+        console.log('[Worker] Sent img #' + (20 + index));
         self.postMessage({ type: 'img', url: 'https://cat-api-237122.appspot.com/img/' + (index + 20) + '.jpg'});     
       }, index * waitMS);
       console.log('Async - using delay ' + waitMS);
