@@ -21,9 +21,9 @@
 
     // and action!
     for(var i=0; i<11; i++) {
-      (function() {
-        setTimeout(function() { appendImage('https://cat-api-237122.appspot.com/img/' + (i + 1) + '.jpg', list) }, i * delay)
-      })();
+      (function(index) {
+        setTimeout(function() { appendImage('https://cat-api-237122.appspot.com/img/' + (index + 1) + '.jpg', list) }, index * delay)
+      })(i);
     }
 
     // helper
