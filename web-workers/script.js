@@ -1,7 +1,8 @@
 var list = document.querySelector('ul');
 
 if (window.Worker) {
-  var worker = new Worker('worker.js?cachebust=' + new Date());  
+  var delay = new URLSearchParams(window.location.search).get('delay');
+  var worker = new Worker('worker.js?cachebust=' + new Date().getTime() + '&delay=' + delay);  
   worker.addEventListener('message', function handleMsg(evt) {
     if (evt.data.type === 'img') {
       console.log('[Main] Image received. URL to load: ' + evt.data.url);
