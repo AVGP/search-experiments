@@ -20,5 +20,11 @@
   <url>
     <loc>https://experiments.geekonaut.de/indexing/noscript</loc>
   </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/links/</loc>
+  </url>
+  <url>
+    <loc>https://experiments.geekonaut.de/links/#/about</loc>
+  </url>
 </urlset>
 
