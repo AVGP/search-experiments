@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <title></title>
+  <title>View Rendered Source bookmarklet</title>
   <meta name="description" content="This bookmarklet shows the page source from the DOM after executing JavaScript">
   <style>
     body { font-family: Helvetica, Arial, sans-serif; }
@@ -32,5 +32,24 @@
     More guidance can be found on Mozilla's article on
     <a href="https://support.mozilla.org/en-US/kb/bookmarklets-perform-common-web-page-tasks#:~:text=How%20do%20I%20install%20a%20bookmarklet%3F,page%20to%20your%20Bookmarks%20Toolbar.">how to install a bookmarklet</a>.
   </p>
+  <h2>Source code of the bookmarklet:</h2>
+  <p>Here's the actual source code that is used in the bookmarklet (minus a wrapper):</p>
+  <pre><code>
+const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+  return '&#' + i.charCodeAt(0) + ';';
+});
+document.documentElement.innerHTML = `&lt;html&gt;
+  &lt;head&gt;
+    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism.css"&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;pre>&lt;code class="lang-html"&gt;${content}&lt;/code&gt;&lt;/pre&gt;
+  &lt;/body&gt;
+&lt;/html&gt;`;
+// for some reason doesn't work in innerHTML :/
+const prism = document.createElement('script');
+prism.src = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js';
+document.body.appendChild(prism);  
+  </code></pre>
 </body>
 </html>
