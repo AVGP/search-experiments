@@ -3,6 +3,7 @@
 <head>
   <title>View Rendered Source bookmarklet</title>
   <meta name="description" content="This bookmarklet shows the page source from the DOM after executing JavaScript">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism.css">
   <style>
     body { font-family: Helvetica, Arial, sans-serif; }
     a.bookmarklet {
@@ -34,7 +35,7 @@
   </p>
   <h2>Source code of the bookmarklet:</h2>
   <p>Here's the actual source code that is used in the bookmarklet (minus a wrapper):</p>
-  <pre><code>
+  <pre class="lang-javascript"><code>
 const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999&lt;&gt;\&amp;]/gim, function(i) {
   return &#39;&amp;#&#39; + i.charCodeAt(0) + &#39;;&#39;;
 });
@@ -82,5 +83,6 @@ const prism = document.createElement(&#39;script&#39;);
 prism.src = &#39;https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js&#39;;
 document.body.appendChild(prism);   
   </code></pre>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js"></script>
 </body>
 </html>
