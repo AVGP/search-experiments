@@ -39,8 +39,7 @@
   </p>
   <h2>Source code of the bookmarklet:</h2>
   <p>Here's the actual source code that is used in the bookmarklet (minus a wrapper):</p>
-  <pre class="lang-javascript"><code>
-const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999&lt;&gt;\&amp;]/gim, function(i) {
+  <pre class="lang-javascript"><code>const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999&lt;&gt;\&amp;]/gim, function(i) {
   return &#39;&amp;#&#39; + i.charCodeAt(0) + &#39;;&#39;;
 });
 document.documentElement.innerHTML = `&lt;html&gt;
@@ -83,8 +82,7 @@ b3.addEventListener(&#39;load&#39;, onBeautifyLoaded);
 
 document.head.appendChild(b1);
 document.head.appendChild(b2);
-document.head.appendChild(b3);
-  </code></pre>
+document.head.appendChild(b3);</code></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js"></script>
   <!--
 const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
