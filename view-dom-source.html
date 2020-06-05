@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>View DOM Source bookmarklet</title>
+  <meta name="description" content="This bookmarklet shows the page source from the DOM after executing JavaScript">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism.css">
+  <style>
+    body { font-family: Helvetica, Arial, sans-serif; }
+    a.bookmarklet {
+      border: 1px solid #ddd;
+      border-radius: 0.5em;
+      background: black;
+      color: white;
+      padding: 0.5em;
+    }
+    
+    a.bookmarklet:visited {
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>View DOM Source</h1>
+  <p>
+    A bookmarklet to see the page source from the rendered DOM instead of the server response.
+    This is particularly helpful for websites that use client-side rendering and JavaScript to display their content.
+  </p>
+  <a class="bookmarklet" href="javascript:(function()%7Bconst%20content%20%3D%20document.documentElement.outerHTML.replace(%2F%5B%5Cu00A0-%5Cu9999%3C%3E%5C%26%5D%2Fgim%2C%20function(i)%20%7B%0A%20%20return%20'%26%23'%20%2B%20i.charCodeAt(0)%20%2B%20'%3B'%3B%0A%7D)%3B%0Adocument.documentElement.innerHTML%20%3D%20%60%3Chtml%3E%0A%20%20%3Chead%3E%0A%20%20%20%20%3Clink%20rel%3D%22stylesheet%22%20href%3D%22https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fprism%2F1.20.0%2Fthemes%2Fprism.css%22%3E%0A%20%20%3C%2Fhead%3E%0A%20%20%3Cbody%3E%0A%20%20%20%20%3Cpre%3E%3Ccode%20class%3D%22lang-html%22%3E%24%7Bcontent%7D%3C%2Fcode%3E%3C%2Fpre%3E%0A%20%20%3C%2Fbody%3E%0A%3C%2Fhtml%3E%60%3B%0A%0A%2F%2F%20beautify%0Aconst%20b1%20%3D%20document.createElement('script')%3B%0Aconst%20b2%20%3D%20document.createElement('script')%3B%0Aconst%20b3%20%3D%20document.createElement('script')%3B%0A%0Ab1.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fjs-beautify%2F1.11.0%2Fbeautify.min.js'%3B%0Ab2.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fjs-beautify%2F1.11.0%2Fbeautify-css.min.js'%3B%0Ab3.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fjs-beautify%2F1.11.0%2Fbeautify-html.min.js'%3B%0A%0Alet%20loaded%20%3D%200%3B%0A%0Afunction%20onBeautifyLoaded()%20%7B%0A%20%20loaded%2B%2B%3B%0A%20%20if(loaded%20%3D%3D%203)%20%7B%0A%20%20%20%20document.querySelector('code').textContent%20%3D%20html_beautify(document.querySelector('code').textContent%2C%20%7B%0A%20%20%20%20%20%20indent_size%3A%202%2C%0A%20%20%20%20%20%20max_preserve_newlines%3A%201%0A%20%20%20%20%7D)%3B%0A%20%20%20%20%2F%2F%20for%20some%20reason%20doesn't%20work%20in%20innerHTML%20%3A%2F%0A%20%20%20%20const%20prism%20%3D%20document.createElement('script')%3B%0A%20%20%20%20prism.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fprism%2F1.20.0%2Fprism.min.js'%3B%0A%20%20%20%20document.body.appendChild(prism)%3B%0A%20%20%7D%0A%7D%0A%0Ab1.addEventListener('load'%2C%20onBeautifyLoaded)%3B%0Ab2.addEventListener('load'%2C%20onBeautifyLoaded)%3B%0Ab3.addEventListener('load'%2C%20onBeautifyLoaded)%3B%0A%0Adocument.head.appendChild(b1)%3B%0Adocument.head.appendChild(b2)%3B%0Adocument.head.appendChild(b3)%3B%7D)()%3B">
+    View DOM source bookmarklet
+  </a>
+  <h2>How to install and use the bookmarklet</h2>
+  <p>Make sure your browser shows the bookmark bar and then drag and drop the following link into your bookmark bar:</p>
+  <a class="bookmarklet" href="javascript:(function()%7Bconst%20content%20%3D%20document.documentElement.outerHTML.replace(%2F%5B%5Cu00A0-%5Cu9999%3C%3E%5C%26%5D%2Fgim%2C%20function(i)%20%7B%0A%20%20return%20'%26%23'%20%2B%20i.charCodeAt(0)%20%2B%20'%3B'%3B%0A%7D)%3B%0Adocument.documentElement.innerHTML%20%3D%20%60%3Chtml%3E%0A%20%20%3Chead%3E%0A%20%20%20%20%3Clink%20rel%3D%22stylesheet%22%20href%3D%22https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fprism%2F1.20.0%2Fthemes%2Fprism.css%22%3E%0A%20%20%3C%2Fhead%3E%0A%20%20%3Cbody%3E%0A%20%20%20%20%3Cpre%3E%3Ccode%20class%3D%22lang-html%22%3E%24%7Bcontent%7D%3C%2Fcode%3E%3C%2Fpre%3E%0A%20%20%3C%2Fbody%3E%0A%3C%2Fhtml%3E%60%3B%0A%0A%2F%2F%20beautify%0Aconst%20b1%20%3D%20document.createElement('script')%3B%0Aconst%20b2%20%3D%20document.createElement('script')%3B%0Aconst%20b3%20%3D%20document.createElement('script')%3B%0A%0Ab1.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fjs-beautify%2F1.11.0%2Fbeautify.min.js'%3B%0Ab2.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fjs-beautify%2F1.11.0%2Fbeautify-css.min.js'%3B%0Ab3.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fjs-beautify%2F1.11.0%2Fbeautify-html.min.js'%3B%0A%0Alet%20loaded%20%3D%200%3B%0A%0Afunction%20onBeautifyLoaded()%20%7B%0A%20%20loaded%2B%2B%3B%0A%20%20if(loaded%20%3D%3D%203)%20%7B%0A%20%20%20%20document.querySelector('code').textContent%20%3D%20html_beautify(document.querySelector('code').textContent%2C%20%7B%0A%20%20%20%20%20%20indent_size%3A%202%2C%0A%20%20%20%20%20%20max_preserve_newlines%3A%201%0A%20%20%20%20%7D)%3B%0A%20%20%20%20%2F%2F%20for%20some%20reason%20doesn't%20work%20in%20innerHTML%20%3A%2F%0A%20%20%20%20const%20prism%20%3D%20document.createElement('script')%3B%0A%20%20%20%20prism.src%20%3D%20'https%3A%2F%2Fcdnjs.cloudflare.com%2Fajax%2Flibs%2Fprism%2F1.20.0%2Fprism.min.js'%3B%0A%20%20%20%20document.body.appendChild(prism)%3B%0A%20%20%7D%0A%7D%0A%0Ab1.addEventListener('load'%2C%20onBeautifyLoaded)%3B%0Ab2.addEventListener('load'%2C%20onBeautifyLoaded)%3B%0Ab3.addEventListener('load'%2C%20onBeautifyLoaded)%3B%0A%0Adocument.head.appendChild(b1)%3B%0Adocument.head.appendChild(b2)%3B%0Adocument.head.appendChild(b3)%3B%7D)()%3B">
+    View DOM source bookmarklet
+  </a>
+  <p>
+    More guidance can be found on Mozilla's article on
+    <a href="https://support.mozilla.org/en-US/kb/bookmarklets-perform-common-web-page-tasks#:~:text=How%20do%20I%20install%20a%20bookmarklet%3F,page%20to%20your%20Bookmarks%20Toolbar.">how to install a bookmarklet</a>.
+  </p>
+  <h2>Source code of the bookmarklet:</h2>
+  <p>Here's the actual source code that is used in the bookmarklet (minus a wrapper):</p>
+  <pre class="lang-javascript"><code>
+const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999&lt;&gt;\&amp;]/gim, function(i) {
+  return &#39;&amp;#&#39; + i.charCodeAt(0) + &#39;;&#39;;
+});
+document.documentElement.innerHTML = `&lt;html&gt;
+  &lt;head&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism.css&quot;&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;pre&gt;&lt;code class=&quot;lang-html&quot;&gt;${content}&lt;/code&gt;&lt;/pre&gt;
+  &lt;/body&gt;
+&lt;/html&gt;`;
+
+// beautify
+const b1 = document.createElement(&#39;script&#39;);
+const b2 = document.createElement(&#39;script&#39;);
+const b3 = document.createElement(&#39;script&#39;);
+
+b1.src = &#39;https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.11.0/beautify.min.js&#39;;
+b2.src = &#39;https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.11.0/beautify-css.min.js&#39;;
+b3.src = &#39;https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.11.0/beautify-html.min.js&#39;;
+
+let loaded = 0;
+
+function onBeautifyLoaded() {
+  loaded++;
+  if(loaded == 3) {
+    document.querySelector(&#39;code&#39;).textContent = html_beautify(document.querySelector(&#39;code&#39;).textContent, {
+      indent_size: 2,
+      max_preserve_newlines: 1
+    });
+    // for some reason doesn&#39;t work in innerHTML :/
+    const prism = document.createElement(&#39;script&#39;);
+    prism.src = &#39;https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js&#39;;
+    document.body.appendChild(prism);
+  }
+}
+
+b1.addEventListener(&#39;load&#39;, onBeautifyLoaded);
+b2.addEventListener(&#39;load&#39;, onBeautifyLoaded);
+b3.addEventListener(&#39;load&#39;, onBeautifyLoaded);
+
+document.head.appendChild(b1);
+document.head.appendChild(b2);
+document.head.appendChild(b3);
+  </code></pre>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js"></script>
+  <!--
+const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+  return '&#' + i.charCodeAt(0) + ';';
+});
+document.documentElement.innerHTML = `<html>
+  <head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/themes/prism.css">
+  </head>
+  <body>
+    <pre><code class="lang-html">${content}</code></pre>
+  </body>
+</html>`;
+
+// beautify
+const b1 = document.createElement('script');
+const b2 = document.createElement('script');
+const b3 = document.createElement('script');
+
+b1.src = 'https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.11.0/beautify.min.js';
+b2.src = 'https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.11.0/beautify-css.min.js';
+b3.src = 'https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.11.0/beautify-html.min.js';
+
+let loaded = 0;
+
+function onBeautifyLoaded() {
+  loaded++;
+  if(loaded == 3) {
+    document.querySelector('code').textContent = html_beautify(document.querySelector('code').textContent, {
+      indent_size: 2,
+      max_preserve_newlines: 1
+    });
+    // for some reason doesn't work in innerHTML :/
+    const prism = document.createElement('script');
+    prism.src = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.20.0/prism.min.js';
+    document.body.appendChild(prism);
+  }
+}
+
+b1.addEventListener('load', onBeautifyLoaded);
+b2.addEventListener('load', onBeautifyLoaded);
+b3.addEventListener('load', onBeautifyLoaded);
+
+document.head.appendChild(b1);
+document.head.appendChild(b2);
+document.head.appendChild(b3);
+  -->
+</body>
+</html>
