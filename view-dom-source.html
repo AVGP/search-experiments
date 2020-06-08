@@ -53,6 +53,11 @@
     <li>Firefox</li>
     <li>Safari</li>
   </ul>
+  <h2>It doesn't work with this page...</h2>
+  <p>
+    Aw mate, that sucks. Sorry, but bookmarklets can't do everything.
+    Maybe now is a good time to learn how to use the <a href="https://developers.google.com/web/tools/chrome-devtools">developer tools</a>.
+    Specifically, learn how to <a href="https://developers.google.com/web/tools/chrome-devtools/dom">view the DOM in the devtools</a>.
   <h2>Source code of the bookmarklet:</h2>
   <p>Here's the actual source code that is used in the bookmarklet (minus a wrapper):</p>
   <pre class="lang-javascript"><code>const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999&lt;&gt;\&amp;]/gim, function(i) {
