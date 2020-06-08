@@ -37,6 +37,19 @@
     More guidance can be found on Mozilla's article on
     <a href="https://support.mozilla.org/en-US/kb/bookmarklets-perform-common-web-page-tasks#:~:text=How%20do%20I%20install%20a%20bookmarklet%3F,page%20to%20your%20Bookmarks%20Toolbar.">how to install a bookmarklet</a>.
   </p>
+  <h2>Features</h2>
+  <ul>
+    <li>Syntax highlighting</li>
+    <li>Beautifies the code</li>
+    <li>Works across browsers</li>
+  </ul>
+  <h2>What browsers does this work with?</h2>
+  Theoretically any browser that supports bookmarklets, but tested in:
+  <ul>
+    <li>Chrome</li>
+    <li>Firefox</li>
+    <li>Safari</li>
+  </ul>
   <h2>Source code of the bookmarklet:</h2>
   <p>Here's the actual source code that is used in the bookmarklet (minus a wrapper):</p>
   <pre class="lang-javascript"><code>const content = document.documentElement.outerHTML.replace(/[\u00A0-\u9999&lt;&gt;\&amp;]/gim, function(i) {
