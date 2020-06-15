@@ -1,0 +1,4022 @@
+<!doctype html>
+<html>
+<body>
+<p></p>
+<script>
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],2:[function(require,module,exports){
+"use strict";
+
+const useragent = require("@financial-times/useragent_parser");
+const semver = require("semver");
+
+function UA(uaString) {
+  let normalized;
+  if (!uaString) {
+    this.ua = {};
+    this.ua.family = "other";
+    this.ua.major = "0";
+    this.ua.minor = "0";
+    this.ua.patch = "0";
+  } else {
+    if (
+      (normalized = uaString.match(/^(\w+)\/(\d+)(?:\.(\d+)(?:\.(\d+))?)?$/i))
+    ) {
+      this.ua = {
+        family: normalized[1].toLowerCase(),
+        major: normalized[2],
+        minor: normalized[3] || "0",
+        patch: "0"
+      };
+    } else {
+      // Google Search iOS app should be detected as the underlying browser, which is safari on iOS
+      uaString = uaString.replace(/ GSA\/[\d\.]+/i, "");
+
+      // Instagram should be detected as the underlying browser, which is safari on ios
+      uaString = uaString.replace(/ Instagram [\d\.]+/i, "");
+
+      // WebPageTest is not a real browser, remove the token to find the underlying browser
+      uaString = uaString.replace(/ PTST\/[\d\.]+/i, "");
+
+      // Waterfox is a Firefox fork, we can remove the Waterfox identifiers and parse the result as Firefox
+      uaString = uaString.replace(/ Waterfox\/[\d\.]+/i, "");
+
+      // Pale Moon has a Firefox-compat UA string, we can remove the Pale Moon and Goanna identifiers and parse the result as Firefox
+      uaString = uaString.replace(/ Goanna\/[\d\.]+/i, "");
+
+      // Pale Moon has a Firefox-compat UA string, we can remove the Pale Moon and Goanna identifiers and parse the result as Firefox
+      uaString = uaString.replace(/ PaleMoon\/[\d\.]+/i, "");
+
+      // Yandex browser is recognised by UA module but is actually Chromium under the hood, so better to remove the Yandex identifier and get the UA module to detect it as Chrome
+      uaString = uaString.replace(/(YaBrowser)\/(\d+\.)+\d+ /, "");
+
+      // Crosswalk browser is recognised by UA module but is actually Chromium under the hood, so better to remove the identifier and get the UA module to detect it as Chrome
+      uaString = uaString.replace(
+        / (Crosswalk)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/i,
+        ""
+      );
+
+      // Chrome and Opera on iOS uses a UIWebView of the underlying platform to render content. By stripping the CriOS or OPiOS strings, the useragent parser will alias the user agent to ios_saf for the UIWebView, which is closer to the actual renderer
+      uaString = uaString.replace(
+        /((CriOS|OPiOS)\/(\d+)\.(\d+)\.(\d+)\.(\d+)|(FxiOS\/(\d+)\.(\d+)))/,
+        ""
+      );
+
+      // Vivaldi browser is recognised by UA module but is actually identical to Chrome, so the best way to get accurate targeting is to remove the vivaldi token from the UA
+      uaString = uaString.replace(/ vivaldi\/[\d\.]+\d+/i, "");
+
+      // Facebook in-app browser `[FBAN/.....]` or `[FB_IAB/.....]` (see https://github.com/Financial-Times/polyfill-service/issues/990)
+      uaString = uaString.replace(/ \[(FB_IAB|FBAN|FBIOS|FB4A)\/[^\]]+\]/i, "");
+
+      // Electron/X.Y.Z` (see https://github.com/Financial-Times/polyfill-service/issues/1129)
+      uaString = uaString.replace(/ Electron\/[\d\.]+\d+/i, "");
+
+      // Chromium-based Edge
+      uaString = uaString.replace(/ Edg\/[\d\.]+\d+/i, "");
+
+      this.ua = useragent(uaString);
+
+      this.ua.patch = "0";
+
+      this.ua.family = this.ua.family.toLowerCase();
+    }
+    if (this.ua.family === "blackberry webkit") {
+      this.ua.family = "bb";
+    }
+    if (this.ua.family === "blackberry") {
+      this.ua.family = "bb";
+    }
+    if (this.ua.family === "pale moon (firefox variant)") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "pale moon") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "firefox mobile") {
+      this.ua.family = "firefox_mob";
+    }
+    if (this.ua.family === "firefox namoroka") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "firefox shiretoko") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "firefox minefield") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "firefox alpha") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "firefox beta") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "microb") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "mozilladeveloperpreview") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "iceweasel") {
+      this.ua.family = "firefox";
+    }
+    if (this.ua.family === "opera tablet") {
+      this.ua.family = "opera";
+    }
+    if (this.ua.family === "opera mobile") {
+      this.ua.family = "op_mob";
+    }
+    if (this.ua.family === "opera mini") {
+      this.ua.family = "op_mini";
+    }
+    if (this.ua.family === "chrome mobile webview") {
+      this.ua.family = "chrome";
+    }
+    if (this.ua.family === "chrome mobile") {
+      this.ua.family = "chrome";
+    }
+    if (this.ua.family === "chrome frame") {
+      this.ua.family = "chrome";
+    }
+    if (this.ua.family === "chromium") {
+      this.ua.family = "chrome";
+    }
+    if (this.ua.family === "headlesschrome") {
+      this.ua.family = "chrome";
+    }
+    if (this.ua.family === "ie mobile") {
+      this.ua.family = "ie_mob";
+    }
+    if (this.ua.family === "ie large screen") {
+      this.ua.family = "ie";
+    }
+    if (this.ua.family === "internet explorer") {
+      this.ua.family = "ie";
+    }
+    if (this.ua.family === "edge mobile") {
+      this.ua.family = "edge_mob";
+    }
+    if (this.ua.family === "uc browser") {
+      if (
+        this.ua.family === "uc browser" &&
+        this.ua.major === "9" &&
+        this.ua.minor === "9"
+      ) {
+        this.ua.family = "ie";
+        this.ua.major = "10";
+        this.ua.minor = "0";
+      }
+    }
+    if (this.ua.family === "chrome mobile ios") {
+      this.ua.family = "ios_chr";
+    }
+    if (this.ua.family === "mobile safari") {
+      this.ua.family = "ios_saf";
+    }
+    if (this.ua.family === "iphone") {
+      this.ua.family = "ios_saf";
+    }
+    if (this.ua.family === "iphone simulator") {
+      this.ua.family = "ios_saf";
+    }
+    if (this.ua.family === "mobile safari uiwebview") {
+      this.ua.family = "ios_saf";
+    }
+    if (this.ua.family === "mobile safari ui/wkwebview") {
+      this.ua.family = "ios_saf";
+    }
+    if (this.ua.family === "mobile safari/wkwebview") {
+      this.ua.family = "ios_saf";
+    }
+    if (this.ua.family === "samsung internet") {
+      this.ua.family = "samsung_mob";
+    }
+    if (this.ua.family === "phantomjs") {
+      this.ua.family = "safari";
+      this.ua.major = "5";
+      this.ua.minor = "0";
+    }
+    if (this.ua.family === "opera") {
+      if (this.ua.family === "opera" && this.ua.major === "20") {
+        this.ua.family = "chrome";
+        this.ua.major = "33";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "21") {
+        this.ua.family = "chrome";
+        this.ua.major = "34";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "22") {
+        this.ua.family = "chrome";
+        this.ua.major = "35";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "23") {
+        this.ua.family = "chrome";
+        this.ua.major = "36";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "24") {
+        this.ua.family = "chrome";
+        this.ua.major = "37";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "25") {
+        this.ua.family = "chrome";
+        this.ua.major = "38";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "26") {
+        this.ua.family = "chrome";
+        this.ua.major = "39";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "27") {
+        this.ua.family = "chrome";
+        this.ua.major = "40";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "28") {
+        this.ua.family = "chrome";
+        this.ua.major = "41";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "29") {
+        this.ua.family = "chrome";
+        this.ua.major = "42";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "30") {
+        this.ua.family = "chrome";
+        this.ua.major = "43";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "31") {
+        this.ua.family = "chrome";
+        this.ua.major = "44";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "32") {
+        this.ua.family = "chrome";
+        this.ua.major = "45";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "33") {
+        this.ua.family = "chrome";
+        this.ua.major = "46";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "34") {
+        this.ua.family = "chrome";
+        this.ua.major = "47";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "35") {
+        this.ua.family = "chrome";
+        this.ua.major = "48";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "36") {
+        this.ua.family = "chrome";
+        this.ua.major = "49";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "37") {
+        this.ua.family = "chrome";
+        this.ua.major = "50";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "38") {
+        this.ua.family = "chrome";
+        this.ua.major = "51";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "39") {
+        this.ua.family = "chrome";
+        this.ua.major = "52";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "40") {
+        this.ua.family = "chrome";
+        this.ua.major = "53";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "41") {
+        this.ua.family = "chrome";
+        this.ua.major = "54";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "42") {
+        this.ua.family = "chrome";
+        this.ua.major = "55";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "43") {
+        this.ua.family = "chrome";
+        this.ua.major = "56";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "44") {
+        this.ua.family = "chrome";
+        this.ua.major = "57";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "45") {
+        this.ua.family = "chrome";
+        this.ua.major = "58";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "46") {
+        this.ua.family = "chrome";
+        this.ua.major = "59";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "47") {
+        this.ua.family = "chrome";
+        this.ua.major = "60";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "48") {
+        this.ua.family = "chrome";
+        this.ua.major = "61";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "49") {
+        this.ua.family = "chrome";
+        this.ua.major = "62";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "50") {
+        this.ua.family = "chrome";
+        this.ua.major = "63";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "51") {
+        this.ua.family = "chrome";
+        this.ua.major = "64";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "52") {
+        this.ua.family = "chrome";
+        this.ua.major = "65";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "53") {
+        this.ua.family = "chrome";
+        this.ua.major = "66";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "54") {
+        this.ua.family = "chrome";
+        this.ua.major = "67";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "55") {
+        this.ua.family = "chrome";
+        this.ua.major = "68";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "56") {
+        this.ua.family = "chrome";
+        this.ua.major = "69";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "57") {
+        this.ua.family = "chrome";
+        this.ua.major = "70";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "58") {
+        this.ua.family = "chrome";
+        this.ua.major = "71";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "59") {
+        this.ua.family = "chrome";
+        this.ua.major = "72";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "60") {
+        this.ua.family = "chrome";
+        this.ua.major = "73";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "61") {
+        this.ua.family = "chrome";
+        this.ua.major = "74";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "62") {
+        this.ua.family = "chrome";
+        this.ua.major = "75";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "63") {
+        this.ua.family = "chrome";
+        this.ua.major = "76";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "64") {
+        this.ua.family = "chrome";
+        this.ua.major = "77";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "65") {
+        this.ua.family = "chrome";
+        this.ua.major = "78";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "66") {
+        this.ua.family = "chrome";
+        this.ua.major = "79";
+        this.ua.minor = "0";
+      }
+      if (this.ua.family === "opera" && this.ua.major === "67") {
+        this.ua.family = "chrome";
+        this.ua.major = "80";
+        this.ua.minor = "0";
+      }
+    }
+    if (this.ua.family === "googlebot") {
+      if (
+        this.ua.family === "googlebot" &&
+        this.ua.major === "2" &&
+        this.ua.minor === "1"
+      ) {
+        this.ua.family = "chrome";
+        this.ua.major = "41";
+        this.ua.minor = "0";
+      }
+    }
+    if (
+      false ||
+      this.ua.family === "edge" ||
+      this.ua.family === "edge_mob" ||
+      (this.ua.family === "ie" && Number(this.ua.major) >= 8) ||
+      (this.ua.family === "ie_mob" && Number(this.ua.major) >= 11) ||
+      (this.ua.family === "chrome" && Number(this.ua.major) >= 29) ||
+      (this.ua.family === "safari" && Number(this.ua.major) >= 9) ||
+      (this.ua.family === "ios_saf" && Number(this.ua.major) >= 9) ||
+      (this.ua.family === "ios_chr" && Number(this.ua.major) >= 9) ||
+      (this.ua.family === "firefox" && Number(this.ua.major) >= 38) ||
+      (this.ua.family === "firefox_mob" && Number(this.ua.major) >= 38) ||
+      (this.ua.family === "android" &&
+        Number(this.ua.major + "." + this.ua.minor) >= 4.3) ||
+      (this.ua.family === "opera" && Number(this.ua.major) >= 33) ||
+      (this.ua.family === "op_mob" && Number(this.ua.major) >= 10) ||
+      (this.ua.family === "op_mini" && Number(this.ua.major) >= 5) ||
+      (this.ua.family === "bb" && Number(this.ua.major) >= 6) ||
+      (this.ua.family === "samsung_mob" && Number(this.ua.major) >= 4)
+    ) {
+    } else {
+      this.ua.family = "other";
+      this.ua.major = "0";
+      this.ua.minor = "0";
+      this.ua.patch = "0";
+    }
+  }
+  this.version =
+    (Number(this.ua.major) || 0) + "." + (Number(this.ua.minor) || 0) + ".0";
+}
+
+UA.prototype.getFamily = function() {
+  return this.ua.family;
+};
+
+UA.prototype.getVersion = function() {
+  return this.version;
+};
+
+UA.prototype.satisfies = function(range) {
+  return semver.satisfies(this.version, range);
+};
+
+UA.prototype.getBaseline = function() {
+  return UA.getBaselines()[this.ua.family];
+};
+
+UA.prototype.meetsBaseline = function() {
+  return semver.satisfies(
+    this.version,
+    ">=" + UA.getBaselines()[this.ua.family]
+  );
+};
+
+UA.prototype.isUnknown = function() {
+  return (
+    Object.keys(UA.getBaselines()).indexOf(this.ua.family) === -1 ||
+    !this.meetsBaseline()
+  );
+};
+
+UA.normalize = function(uaString) {
+  const ua = new UA(uaString);
+  return ua.getFamily() + "/" + ua.version;
+};
+
+UA.getBaselines = function() {
+  return {
+    edge: "*",
+    edge_mob: "*",
+    ie: "8",
+    ie_mob: "11",
+    chrome: "29",
+    safari: "9",
+    ios_saf: "9",
+    ios_chr: "9",
+    firefox: "38",
+    firefox_mob: "38",
+    android: "4.3",
+    opera: "33",
+    op_mob: "10",
+    op_mini: "5",
+    bb: "6",
+    samsung_mob: "4"
+  };
+};
+
+module.exports = UA;
+
+},{"@financial-times/useragent_parser":3,"semver":31}],3:[function(require,module,exports){
+module.exports = function useragent_parser(ua) {
+  let family = "Other";
+  let major;
+  let minor;
+  let patch;
+  let result;
+  if (!ua) {
+  } else if (result = /Opera\/9\.80 \(.+(Opera Mini)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Opera\/9\.80 \(.+(Opera Mini)\/(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/525\.18(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "3";
+		minor="1";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/528\.18(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "4";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/531\.21(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "4";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/532\.9(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "4";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/532\+/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "5";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/533\.17(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "5";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/534\.12(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "5";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/534\.46(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "5";
+		minor="1";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/536\.26(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "6";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/537\.51(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "7";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/600\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "8";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/601\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "9";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/601\.5(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "9";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/602\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "10";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/602\.2(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "10";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/602\.3(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "10";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/602\.4(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "10";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/603\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "10";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/603\.2(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "10";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/604\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "11";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/604\.2(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "11";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/604\.3(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "11";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/604\.5(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "11";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/605\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "11";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/606\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "12";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/607\.1(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "12";
+		minor="1";
+	} else if (result = /(iPod|iPhone|iPad).+AppleWebKit\/608\.2(?:\.\d+|)/.exec(ua)) {
+		family = "Mobile Safari/WKWebView";
+		major = "13";
+	} else if (result = /(MQQBrowser\/Mini)(?:(\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = "QQ Browser Mini";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(MQQBrowser)(?:\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = "QQ Browser Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(QQBrowser)(?:\/(\d+)(?:\.(\d+)\.(\d+)(?:\.(\d+)|)|)|)/.exec(ua)) {
+		family = "QQ Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(ESPN)[%20| ]+Radio\/(\d+)\.(\d+)\.(\d+) CFNetwork/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Antenna)\/(\d+) CFNetwork/.exec(ua)) {
+		family = "AntennaPod";
+		major = result[2];
+	} else if (result = /(TopPodcasts)Pro\/(\d+) CFNetwork/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+	} else if (result = /(MusicDownloader)Lite\/(\d+)\.(\d+)\.(\d+) CFNetwork/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(.*)-iPad\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)(?:\.(\d+)|) CFNetwork/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(.*)-iPhone\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)(?:\.(\d+)|) CFNetwork/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(.*)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)(?:\.(\d+)|) CFNetwork/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(espn\.go)/.exec(ua)) {
+		family = "ESPN";
+	} else if (result = /(espnradio\.com)/.exec(ua)) {
+		family = "ESPN";
+	} else if (result = /ESPN APP$/.exec(ua)) {
+		family = "ESPN";
+	} else if (result = /(audioboom\.com)/.exec(ua)) {
+		family = "AudioBoom";
+	} else if (result = / (Rivo) RHYTHM/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(CFNetwork)(?:\/(\d+)\.(\d+)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = "CFNetwork";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Pingdom\.com_bot_version_)(\d+)\.(\d+)/.exec(ua)) {
+		family = "PingdomBot";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(PingdomTMS)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "PingdomBot";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = / (PTST)\/(\d+)(?:\.(\d+)|)$/.exec(ua)) {
+		family = "WebPageTest.org bot";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /X11; (Datanyze); Linux/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(NewRelicPinger)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "NewRelicPingerBot";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Tableau)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Tableau";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Salesforce)(?:.)\/(\d+)\.(\d?)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(\(StatusCake\))/.exec(ua)) {
+		family = "StatusCakeBot";
+	} else if (result = /(facebookexternalhit)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "FacebookBot";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /Google.*\/\+\/web\/snippet/.exec(ua)) {
+		family = "GooglePlusBot";
+	} else if (result = /via ggpht\.com GoogleImageProxy/.exec(ua)) {
+		family = "GmailImageProxy";
+	} else if (result = /YahooMailProxy; https:\/\/help\.yahoo\.com\/kb\/yahoo-mail-proxy-SLN28749\.html/.exec(ua)) {
+		family = "YahooMailProxy";
+	} else if (result = /(Twitterbot)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Twitterbot";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /\/((?:Ant-|)Nutch|[A-z]+[Bb]ot|[A-z]+[Ss]pider|Axtaris|fetchurl|Isara|ShopSalad|Tailsweep)[ \-](\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\b(008|Altresium|Argus|BaiduMobaider|BoardReader|DNSGroup|DataparkSearch|EDI|Goodzer|Grub|INGRID|Infohelfer|LinkedInBot|LOOQ|Nutch|OgScrper|PathDefender|Peew|PostPost|Steeler|Twitterbot|VSE|WebCrunch|WebZIP|Y!J-BR[A-Z]|YahooSeeker|envolk|sproose|wminer)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(MSIE) (\d+)\.(\d+)([a-z]\d|[a-z]|);.* MSIECrawler/.exec(ua)) {
+		family = "MSIECrawler";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(DAVdroid)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Google-HTTP-Java-Client|Apache-HttpClient|Go-http-client|scalaj-http|http%20client|Python-urllib|HttpMonitor|TLSProber|WinHTTP|JNLP|okhttp|aihttp|reqwest|axios|unirest-(?:java|python|ruby|nodejs|php|net))(?:[ /](\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Pinterest(?:bot|))\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)[;\s(]+\+https:\/\/www.pinterest.com\/bot.html/.exec(ua)) {
+		family = "Pinterestbot";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(CSimpleSpider|Cityreview Robot|CrawlDaddy|CrawlFire|Finderbots|Index crawler|Job Roboter|KiwiStatus Spider|Lijit Crawler|QuerySeekerSpider|ScollSpider|Trends Crawler|USyd-NLP-Spider|SiteCat Webbot|BotName\/\$BotVersion|123metaspider-Bot|1470\.net crawler|50\.nu|8bo Crawler Bot|Aboundex|Accoona-[A-z]{1,30}-Agent|AdsBot-Google(?:-[a-z]{1,30}|)|altavista|AppEngine-Google|archive.{0,30}\.org_bot|archiver|Ask Jeeves|[Bb]ai[Dd]u[Ss]pider(?:-[A-Za-z]{1,30})(?:-[A-Za-z]{1,30}|)|bingbot|BingPreview|blitzbot|BlogBridge|Bloglovin|BoardReader Blog Indexer|BoardReader Favicon Fetcher|boitho.com-dc|BotSeer|BUbiNG|\b\w{0,30}favicon\w{0,30}\b|\bYeti(?:-[a-z]{1,30}|)|Catchpoint(?: bot|)|[Cc]harlotte|Checklinks|clumboot|Comodo HTTP\(S\) Crawler|Comodo-Webinspector-Crawler|ConveraCrawler|CRAWL-E|CrawlConvera|Daumoa(?:-feedfetcher|)|Feed Seeker Bot|Feedbin|findlinks|Flamingo_SearchEngine|FollowSite Bot|furlbot|Genieo|gigabot|GomezAgent|gonzo1|(?:[a-zA-Z]{1,30}-|)Googlebot(?:-[a-zA-Z]{1,30}|)|Google SketchUp|grub-client|gsa-crawler|heritrix|HiddenMarket|holmes|HooWWWer|htdig|ia_archiver|ICC-Crawler|Icarus6j|ichiro(?:\/mobile|)|IconSurf|IlTrovatore(?:-Setaccio|)|InfuzApp|Innovazion Crawler|InternetArchive|IP2[a-z]{1,30}Bot|jbot\b|KaloogaBot|Kraken|Kurzor|larbin|LEIA|LesnikBot|Linguee Bot|LinkAider|LinkedInBot|Lite Bot|Llaut|lycos|Mail\.RU_Bot|masscan|masidani_bot|Mediapartners-Google|Microsoft .{0,30} Bot|mogimogi|mozDex|MJ12bot|msnbot(?:-media {0,2}|)|msrbot|Mtps Feed Aggregation System|netresearch|Netvibes|NewsGator[^/]{0,30}|^NING|Nutch[^/]{0,30}|Nymesis|ObjectsSearch|OgScrper|Orbiter|OOZBOT|PagePeeker|PagesInventory|PaxleFramework|Peeplo Screenshot Bot|PlantyNet_WebRobot|Pompos|Qwantify|Read%20Later|Reaper|RedCarpet|Retreiver|Riddler|Rival IQ|scooter|Scrapy|Scrubby|searchsight|seekbot|semanticdiscovery|SemrushBot|Simpy|SimplePie|SEOstats|SimpleRSS|SiteCon|Slackbot-LinkExpanding|Slack-ImgProxy|Slurp|snappy|Speedy Spider|Squrl Java|Stringer|TheUsefulbot|ThumbShotsBot|Thumbshots\.ru|Tiny Tiny RSS|Twitterbot|WhatsApp|URL2PNG|Vagabondo|VoilaBot|^vortex|Votay bot|^voyager|WASALive.Bot|Web-sniffer|WebThumb|WeSEE:[A-z]{1,30}|WhatWeb|WIRE|WordPress|Wotbox|www\.almaden\.ibm\.com|Xenu(?:.s|) Link Sleuth|Xerka [A-z]{1,30}Bot|yacy(?:bot|)|YahooSeeker|Yahoo! Slurp|Yandex\w{1,30}|YodaoBot(?:-[A-z]{1,30}|)|YottaaMonitor|Yowedo|^Zao|^Zao-Crawler|ZeBot_www\.ze\.bz|ZooShot|ZyBorg)(?:[ /]v?(\d+)(?:\.(\d+)(?:\.(\d+)|)|)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\b(Boto3?|JetS3t|aws-(?:cli|sdk-(?:cpp|go|java|nodejs|ruby2?|dotnet-(?:\d{1,2}|core)))|s3fs)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\[(FBAN\/MessengerForiOS|FB_IAB\/MESSENGER);FBAV\/(\d+)(?:\.(\d+)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = "Facebook Messenger";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\[FB.*;(FBAV)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Facebook";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\[FB.*;/.exec(ua)) {
+		family = "Facebook";
+	} else if (result = /(?:\/[A-Za-z0-9\.]+|) {0,5}([A-Za-z0-9 \-_\!\[\]:]{0,50}(?:[Aa]rchiver|[Ii]ndexer|[Ss]craper|[Bb]ot|[Ss]pider|[Cc]rawl[a-z]{0,50}))[/ ](\d+)(?:\.(\d+)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /((?:[A-Za-z][A-Za-z0-9 -]{0,50}|)[^C][^Uu][Bb]ot)\b(?:(?:[ /]| v)(\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /((?:[A-z0-9]{1,50}|[A-z\-]{1,50} ?|)(?: the |)(?:[Ss][Pp][Ii][Dd][Ee][Rr]|[Ss]crape|[Cc][Rr][Aa][Ww][Ll])[A-z0-9]{0,50})(?:(?:[ /]| v)(\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(HbbTV)\/(\d+)\.(\d+)\.(\d+) \(/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Chimera|SeaMonkey|Camino|Waterfox)\/(\d+)\.(\d+)\.?([ab]?\d+[a-z]*|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(SailfishBrowser)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Sailfish Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\[(Pinterest)\/[^\]]+\]/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(Pinterest)(?: for Android(?: Tablet|)|)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Mozilla.*Mobile.*(Instagram).(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Mozilla.*Mobile.*(Flipboard).(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Mozilla.*Mobile.*(Flipboard-Briefing).(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Mozilla.*Mobile.*(Onefootball)\/Android.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Snapchat)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+) Basilisk\/(\d+)/.exec(ua)) {
+		family = "Basilisk";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(PaleMoon)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Pale Moon";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Fennec)\/(\d+)\.(\d+)\.?([ab]?\d+[a-z]*)/.exec(ua)) {
+		family = "Firefox Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Fennec)\/(\d+)\.(\d+)(pre)/.exec(ua)) {
+		family = "Firefox Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Fennec)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Firefox Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(?:Mobile|Tablet);.*(Firefox)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Firefox Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Namoroka|Shiretoko|Minefield)\/(\d+)\.(\d+)\.(\d+(?:pre|))/.exec(ua)) {
+		family = "Firefox ($1)".replace('$1', result[1]);
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+)(a\d+[a-z]*)/.exec(ua)) {
+		family = "Firefox Alpha";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+)(b\d+[a-z]*)/.exec(ua)) {
+		family = "Firefox Beta";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)-(?:\d+\.\d+|)\/(\d+)\.(\d+)(a\d+[a-z]*)/.exec(ua)) {
+		family = "Firefox Alpha";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)-(?:\d+\.\d+|)\/(\d+)\.(\d+)(b\d+[a-z]*)/.exec(ua)) {
+		family = "Firefox Beta";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Namoroka|Shiretoko|Minefield)\/(\d+)\.(\d+)([ab]\d+[a-z]*|)/.exec(ua)) {
+		family = "Firefox ($1)".replace('$1', result[1]);
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox).*Tablet browser (\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "MicroB";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(MozillaDeveloperPreview)\/(\d+)\.(\d+)([ab]\d+[a-z]*|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(FxiOS)\/(\d+)\.(\d+)(\.(\d+)|)(\.(\d+)|)/.exec(ua)) {
+		family = "Firefox iOS";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Flock)\/(\d+)\.(\d+)(b\d+?)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(RockMelt)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Navigator)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Netscape";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Navigator)\/(\d+)\.(\d+)([ab]\d+)/.exec(ua)) {
+		family = "Netscape";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Netscape6)\/(\d+)\.(\d+)\.?([ab]?\d+|)/.exec(ua)) {
+		family = "Netscape";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(MyIBrow)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "My Internet Browser";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(UC? ?Browser|UCWEB|U3)[ /]?(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "UC Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Opera Tablet).*Version\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Opera Mini)(?:\/att|)\/?(\d+|)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Opera)\/.+Opera Mobi.+Version\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Opera Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Opera)\/(\d+)\.(\d+).+Opera Mobi/.exec(ua)) {
+		family = "Opera Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /Opera Mobi.+(Opera)(?:\/|\s+)(\d+)\.(\d+)/.exec(ua)) {
+		family = "Opera Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /Opera Mobi/.exec(ua)) {
+		family = "Opera Mobile";
+	} else if (result = /(Opera)\/9.80.*Version\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(?:Mobile Safari).*(OPR)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Opera Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(?:Chrome).*(OPR)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Opera";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Coast)\/(\d+).(\d+).(\d+)/.exec(ua)) {
+		family = "Opera Coast";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(OPiOS)\/(\d+).(\d+).(\d+)/.exec(ua)) {
+		family = "Opera Mini";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Chrome\/.+( MMS)\/(\d+).(\d+).(\d+)/.exec(ua)) {
+		family = "Opera Neon";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(hpw|web)OS\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "webOS Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(luakit)/.exec(ua)) {
+		family = "LuaKit";
+	} else if (result = /(Snowshoe)\/(\d+)\.(\d+).(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Gecko\/\d+ (Lightning)\/(\d+)\.(\d+)\.?((?:[ab]?\d+[a-z]*)|(?:\d*))/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+)\.(\d+(?:pre|)) \(Swiftfox\)/.exec(ua)) {
+		family = "Swiftfox";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+)([ab]\d+[a-z]*|) \(Swiftfox\)/.exec(ua)) {
+		family = "Swiftfox";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(rekonq)\/(\d+)\.(\d+)(?:\.(\d+)|) Safari/.exec(ua)) {
+		family = "Rekonq";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /rekonq/.exec(ua)) {
+		family = "Rekonq";
+	} else if (result = /(conkeror|Conkeror)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Conkeror";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(konqueror)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Konqueror";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(WeTab)-Browser/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(Comodo_Dragon)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Comodo Dragon";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Symphony) (\d+).(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /PLAYSTATION 3.+WebKit/.exec(ua)) {
+		family = "NetFront NX";
+	} else if (result = /PLAYSTATION 3/.exec(ua)) {
+		family = "NetFront";
+	} else if (result = /(PlayStation Portable)/.exec(ua)) {
+		family = "NetFront";
+	} else if (result = /(PlayStation Vita)/.exec(ua)) {
+		family = "NetFront NX";
+	} else if (result = /AppleWebKit.+ (NX)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "NetFront NX";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Nintendo 3DS)/.exec(ua)) {
+		family = "NetFront NX";
+	} else if (result = /(Silk)\/(\d+)\.(\d+)(?:\.([0-9\-]+)|)/.exec(ua)) {
+		family = "Amazon Silk";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Puffin)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Windows Phone .*(Edge)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Edge Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(SamsungBrowser)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Samsung Internet";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(SznProhlizec)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Seznam prohlížeč";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(coc_coc_browser)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Coc Coc";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(baidubrowser)[/\s](\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Baidu Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(FlyFlow)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Baidu Explorer";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(MxBrowser)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Maxthon";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Crosswalk)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Line)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "LINE";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(MiuiBrowser)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "MiuiBrowser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Mint Browser)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Mint Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Mozilla.+Android.+(GSA)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Google";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Version\/.+(Chrome)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Chrome Mobile WebView";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /; wv\).+(Chrome)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Chrome Mobile WebView";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(CrMo)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Chrome Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(CriOS)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Chrome Mobile iOS";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Chrome)\/(\d+)\.(\d+)\.(\d+)\.(\d+) Mobile(?:[ /]|$)/.exec(ua)) {
+		family = "Chrome Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = / Mobile .*(Chrome)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Chrome Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(chromeframe)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Chrome Frame";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(SLP Browser)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Tizen Browser";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(SE 2\.X) MetaSr (\d+)\.(\d+)/.exec(ua)) {
+		family = "Sogou Explorer";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(MQQBrowser\/Mini)(?:(\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = "QQ Browser Mini";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(MQQBrowser)(?:\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = "QQ Browser Mobile";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(QQBrowser)(?:\/(\d+)(?:\.(\d+)\.(\d+)(?:\.(\d+)|)|)|)/.exec(ua)) {
+		family = "QQ Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Rackspace Monitoring)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "RackspaceBot";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(PyAMF)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(YaBrowser)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Yandex Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Chrome)\/(\d+)\.(\d+)\.(\d+).* MRCHROME/.exec(ua)) {
+		family = "Mail.ru Chromium Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(AOL) (\d+)\.(\d+); AOLBuild (\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(PodCruncher|Downcast)[ /]?(\d+)(?:\.(\d+)|)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = / (BoxNotes)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Whale)\/(\d+)\.(\d+)\.(\d+)\.(\d+) Mobile(?:[ /]|$)/.exec(ua)) {
+		family = "Whale";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Whale)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Whale";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Ghost)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Slack_SSB)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Slack Desktop Client";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(HipChat)\/?(\d+|)/.exec(ua)) {
+		family = "HipChat Desktop Client";
+		major = result[2];
+	} else if (result = /\b(MobileIron|FireWeb|Jasmine|ANTGalio|Midori|Fresco|Lobo|PaleMoon|Maxthon|Lynx|OmniWeb|Dillo|Camino|Demeter|Fluid|Fennec|Epiphany|Shiira|Sunrise|Spotify|Flock|Netscape|Lunascape|WebPilot|NetFront|Netfront|Konqueror|SeaMonkey|Kazehakase|Vienna|Iceape|Iceweasel|IceWeasel|Iron|K-Meleon|Sleipnir|Galeon|GranParadiso|Opera Mini|iCab|NetNewsWire|ThunderBrowse|Iris|UP\.Browser|Bunjalloo|Google Earth|Raven for Mac|Openwave|MacOutlook|Electron|OktaMobile)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /Microsoft Office Outlook 12\.\d+\.\d+|MSOffice 12/.exec(ua)) {
+		family = "Outlook";
+		major = "2007";
+	} else if (result = /Microsoft Outlook 14\.\d+\.\d+|MSOffice 14/.exec(ua)) {
+		family = "Outlook";
+		major = "2010";
+	} else if (result = /Microsoft Outlook 15\.\d+\.\d+/.exec(ua)) {
+		family = "Outlook";
+		major = "2013";
+	} else if (result = /Microsoft Outlook (?:Mail )?16\.\d+\.\d+|MSOffice 16/.exec(ua)) {
+		family = "Outlook";
+		major = "2016";
+	} else if (result = /Microsoft Office (Word) 2014/.exec(ua)) {
+		family = result[1];
+	} else if (result = /Outlook-Express\/7\.0.*/.exec(ua)) {
+		family = "Windows Live Mail";
+	} else if (result = /(Airmail) (\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Thunderbird)\/(\d+)\.(\d+)(?:\.(\d+(?:pre|))|)/.exec(ua)) {
+		family = "Thunderbird";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Postbox)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Postbox";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Barca(?:Pro)?)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Barca";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Lotus-Notes)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Lotus Notes";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Vivaldi)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Edge?)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Edge";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(brave)\/(\d+)\.(\d+)\.(\d+) Chrome/.exec(ua)) {
+		family = "Brave";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Chrome)\/(\d+)\.(\d+)\.(\d+)[\d.]* Iron[^/]/.exec(ua)) {
+		family = "Iron";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /\b(Dolphin)(?: |HDCN\/|\/INT\-)(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(HeadlessChrome)(?:\/(\d+)\.(\d+)\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Evolution)\/(\d+)\.(\d+)\.(\d+\.\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(RCM CardDAV plugin)\/(\d+)\.(\d+)\.(\d+(?:-dev|))/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(bingbot|Bolt|AdobeAIR|Jasmine|IceCat|Skyfire|Midori|Maxthon|Lynx|Arora|IBrowse|Dillo|Camino|Shiira|Fennec|Phoenix|Flock|Netscape|Lunascape|Epiphany|WebPilot|Opera Mini|Opera|NetFront|Netfront|Konqueror|Googlebot|SeaMonkey|Kazehakase|Vienna|Iceape|Iceweasel|IceWeasel|Iron|K-Meleon|Sleipnir|Galeon|GranParadiso|iCab|iTunes|MacAppStore|NetNewsWire|Space Bison|Stainless|Orca|Dolfin|BOLT|Minimo|Tizen Browser|Polaris|Abrowser|Planetweb|ICE Browser|mDolphin|qutebrowser|Otter|QupZilla|MailBar|kmail2|YahooMobileMail|ExchangeWebServices|ExchangeServicesClient|Dragon|Outlook-iOS-Android)\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Chromium|Chrome)\/(\d+)\.(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(IEMobile)[ /](\d+)\.(\d+)/.exec(ua)) {
+		family = "IE Mobile";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(BacaBerita App)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(bPod|Pocket Casts|Player FM)$/.exec(ua)) {
+		family = result[1];
+	} else if (result = /^(AlexaMediaPlayer|VLC)\/(\d+)\.(\d+)\.([^.\s]+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(AntennaPod|WMPlayer|Zune|Podkicker|Radio|ExoPlayerDemo|Overcast|PocketTunes|NSPlayer|okhttp|DoggCatcher|QuickNews|QuickTime|Peapod|Podcasts|GoldenPod|VLC|Spotify|Miro|MediaGo|Juice|iPodder|gPodder|Banshee)\/(\d+)\.(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(Peapod|Liferea)\/([^.\s]+)\.([^.\s]+|)\.?([^.\s]+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(bPod|Player FM) BMID\/(\S+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+	} else if (result = /^(Podcast ?Addict)\/v(\d+) /.exec(ua)) {
+		family = result[1];
+		major = result[2];
+	} else if (result = /^(Podcast ?Addict) /.exec(ua)) {
+		family = "PodcastAddict";
+	} else if (result = /(Replay) AV/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(VOX) Music Player/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(CITA) RSS Aggregator\/(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Pocket Casts)$/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(Player FM)$/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(LG Player|Doppler|FancyMusic|MediaMonkey|Clementine) (\d+)\.(\d+)\.?([^.\s]+|)\.?([^.\s]+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(philpodder)\/(\d+)\.(\d+)\.?([^.\s]+|)\.?([^.\s]+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Player FM|Pocket Casts|DoggCatcher|Spotify|MediaMonkey|MediaGo|BashPodder)/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(QuickTime)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Kinoma)(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+	} else if (result = /(Fancy) Cloud Music (\d+)\.(\d+)/.exec(ua)) {
+		family = "FancyMusic";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /EspnDownloadManager/.exec(ua)) {
+		family = "ESPN";
+	} else if (result = /(ESPN) Radio (\d+)\.(\d+)(?:\.(\d+)|) ?(?:rv:(\d+)|) /.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(podracer|jPodder) v ?(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(ZDM)\/(\d+)\.(\d+)[; ]?/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Zune|BeyondPod) (\d+)(?:\.(\d+)|)[\);]/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(WMPlayer)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(Lavf)/.exec(ua)) {
+		family = "WMPlayer";
+	} else if (result = /^(RSSRadio)[ /]?(\d+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+	} else if (result = /(RSS_Radio) (\d+)\.(\d+)/.exec(ua)) {
+		family = "RSSRadio";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Podkicker) \S+\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Podkicker";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(HTC) Streaming Player \S+ \/ \S+ \/ \S+ \/ (\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(Stitcher)\/iOS/.exec(ua)) {
+		family = result[1];
+	} else if (result = /^(Stitcher)\/Android/.exec(ua)) {
+		family = result[1];
+	} else if (result = /^(VLC) .*version (\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = / (VLC) for/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(vlc)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "VLC";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(foobar)\S+\/([^.\s]+)\.([^.\s]+|)\.?([^.\s]+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(Clementine)\S+ ([^.\s]+)\.([^.\s]+|)\.?([^.\s]+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(amarok)\/([^.\s]+)\.([^.\s]+|)\.?([^.\s]+|)/.exec(ua)) {
+		family = "Amarok";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Custom)-Feed Reader/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(iRider|Crazy Browser|SkipStone|iCab|Lunascape|Sleipnir|Maemo Browser) (\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iCab|Lunascape|Opera|Android|Jasmine|Polaris|Microsoft SkyDriveSync|The Bat!) (\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Kindle)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Android) Donut/.exec(ua)) {
+		family = result[1];
+		major = "1";
+		minor="2";
+	} else if (result = /(Android) Eclair/.exec(ua)) {
+		family = result[1];
+		major = "2";
+		minor="1";
+	} else if (result = /(Android) Froyo/.exec(ua)) {
+		family = result[1];
+		major = "2";
+		minor="2";
+	} else if (result = /(Android) Gingerbread/.exec(ua)) {
+		family = result[1];
+		major = "2";
+		minor="3";
+	} else if (result = /(Android) Honeycomb/.exec(ua)) {
+		family = result[1];
+		major = "3";
+	} else if (result = /(MSIE) (\d+)\.(\d+).*XBLWP7/.exec(ua)) {
+		family = "IE Large Screen";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Nextcloud)/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(mirall)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(ownCloud-android)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Owncloud";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(OC)\/(\d+)\.(\d+)\.(\d+)\.(\d+) \(Skype for Business\)/.exec(ua)) {
+		family = "Skype";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Obigo)InternetBrowser/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(Obigo)\-Browser/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(Obigo|OBIGO)[^\d]*(\d+)(?:.(\d+)|)/.exec(ua)) {
+		family = "Obigo";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(MAXTHON|Maxthon) (\d+)\.(\d+)/.exec(ua)) {
+		family = "Maxthon";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Maxthon|MyIE2|Uzbl|Shiira)/.exec(ua)) {
+		family = result[1];
+		major = "0";
+	} else if (result = /(BrowseX) \((\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(NCSA_Mosaic)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "NCSA Mosaic";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(POLARIS)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Polaris";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Embider)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Polaris";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(BonEcho)\/(\d+)\.(\d+)\.?([ab]?\d+|)/.exec(ua)) {
+		family = "Bon Echo";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPhone|iPad).+GSA\/(\d+)\.(\d+)\.(\d+) Mobile/.exec(ua)) {
+		family = "Google";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPhone|iPad).+Version\/(\d+)\.(\d+)(?:\.(\d+)|).*[ +]Safari/.exec(ua)) {
+		family = "Mobile Safari";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPod touch|iPhone|iPad);.*CPU.*OS[ +](\d+)_(\d+)(?:_(\d+)|).* AppleNews\/\d+\.\d+\.\d+?/.exec(ua)) {
+		family = "Mobile Safari UI/WKWebView";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPhone|iPad).+Version\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = "Mobile Safari UI/WKWebView";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPod touch|iPhone|iPad);.*CPU.*OS[ +](\d+)_(\d+)(?:_(\d+)|).*Mobile.*[ +]Safari/.exec(ua)) {
+		family = "Mobile Safari";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPod touch|iPhone|iPad);.*CPU.*OS[ +](\d+)_(\d+)(?:_(\d+)|).*Mobile/.exec(ua)) {
+		family = "Mobile Safari UI/WKWebView";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(iPod|iPhone|iPad).* Safari/.exec(ua)) {
+		family = "Mobile Safari";
+	} else if (result = /(iPod|iPhone|iPad)/.exec(ua)) {
+		family = "Mobile Safari UI/WKWebView";
+	} else if (result = /(Watch)(\d+),(\d+)/.exec(ua)) {
+		family = "Apple $1 App".replace('$1', result[1]);
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Outlook-iOS)\/\d+\.\d+\.prod\.iphone \((\d+)\.(\d+)\.(\d+)\)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(AvantGo) (\d+).(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(OneBrowser)\/(\d+).(\d+)/.exec(ua)) {
+		family = "ONE Browser";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Avant)/.exec(ua)) {
+		family = result[1];
+		major = "1";
+	} else if (result = /(QtCarBrowser)/.exec(ua)) {
+		family = result[1];
+		major = "1";
+	} else if (result = /^(iBrowser\/Mini)(\d+).(\d+)/.exec(ua)) {
+		family = "iBrowser Mini";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /^(iBrowser|iRAPP)\/(\d+).(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /^(Nokia)/.exec(ua)) {
+		family = "Nokia Services (WAP) Browser";
+	} else if (result = /(NokiaBrowser)\/(\d+)\.(\d+).(\d+)\.(\d+)/.exec(ua)) {
+		family = "Nokia Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(NokiaBrowser)\/(\d+)\.(\d+).(\d+)/.exec(ua)) {
+		family = "Nokia Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(NokiaBrowser)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Nokia Browser";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(BrowserNG)\/(\d+)\.(\d+).(\d+)/.exec(ua)) {
+		family = "Nokia Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Series60)\/5\.0/.exec(ua)) {
+		family = "Nokia Browser";
+		major = "7";
+		minor="0";
+	} else if (result = /(Series60)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Nokia OSS Browser";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(S40OviBrowser)\/(\d+)\.(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Ovi Browser";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Nokia)[EN]?(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+	} else if (result = /(PlayBook).+RIM Tablet OS (\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "BlackBerry WebKit";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Black[bB]erry|BB10).+Version\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "BlackBerry WebKit";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Black[bB]erry)\s?(\d+)/.exec(ua)) {
+		family = "BlackBerry";
+		major = result[2];
+	} else if (result = /(OmniWeb)\/v(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Blazer)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Palm Blazer";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Pre)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Palm Pre";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(ELinks)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(ELinks) \((\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Links) \((\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(QtWeb) Internet Browser\/(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(PhantomJS)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(AppleWebKit)\/(\d+)(?:\.(\d+)|)\+ .* Safari/.exec(ua)) {
+		family = "WebKit Nightly";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Version)\/(\d+)\.(\d+)(?:\.(\d+)|).*Safari\//.exec(ua)) {
+		family = "Safari";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Safari)\/\d+/.exec(ua)) {
+		family = result[1];
+	} else if (result = /(OLPC)\/Update(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(OLPC)\/Update()\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = "0";
+		minor = result[3];
+	} else if (result = /(SEMC\-Browser)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Teleca)/.exec(ua)) {
+		family = "Teleca Browser";
+	} else if (result = /(Phantom)\/V(\d+)\.(\d+)/.exec(ua)) {
+		family = "Phantom Browser";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Trident)\/(7|8)\.(0)/.exec(ua)) {
+		family = "IE";
+		major = "11";
+		minor = result[3];
+	} else if (result = /(Trident)\/(6)\.(0)/.exec(ua)) {
+		family = "IE";
+		major = "10";
+		minor = result[3];
+	} else if (result = /(Trident)\/(5)\.(0)/.exec(ua)) {
+		family = "IE";
+		major = "9";
+		minor = result[3];
+	} else if (result = /(Trident)\/(4)\.(0)/.exec(ua)) {
+		family = "IE";
+		major = "8";
+		minor = result[3];
+	} else if (result = /(Espial)\/(\d+)(?:\.(\d+)|)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(AppleWebKit)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Apple Mail";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Firefox)\/(\d+)\.(\d+)(pre|[ab]\d+[a-z]*|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /([MS]?IE) (\d+)\.(\d+)/.exec(ua)) {
+		family = "IE";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(python-requests)\/(\d+)\.(\d+)/.exec(ua)) {
+		family = "Python Requests";
+		major = result[2];
+		minor = result[3];
+	} else if (result = /\b(Windows-Update-Agent|Microsoft-CryptoAPI|SophosUpdateManager|SophosAgent|Debian APT-HTTP|Ubuntu APT-HTTP|libcurl-agent|libwww-perl|urlgrabber|curl|PycURL|Wget|aria2|Axel|OpenBSD ftp|lftp|jupdate|insomnia|fetch libfetch|akka-http|got)(?:[ /](\d+)(?:\.(\d+)|)(?:\.(\d+)|)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Python\/3\.\d{1,3} aiohttp)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Python\/3\.\d{1,3} aiohttp)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(Java)[/ ]{0,1}\d+\.(\d+)\.(\d+)[_-]*([a-zA-Z0-9]+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(Cyberduck)\/(\d+)\.(\d+)\.(\d+)(?:\.\d+|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(S3 Browser) (\d+)-(\d+)-(\d+)(?:\s*http:\/\/s3browser\.com|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /(S3Gof3r)/.exec(ua)) {
+		family = result[1];
+	} else if (result = /\b(ibm-cos-sdk-(?:core|java|js|python))\/(\d+)\.(\d+)(?:\.(\d+)|)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(rusoto)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(rclone)\/v(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /^(Roku)\/DVP-(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+	} else if (result = /(Kurio)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "Kurio App";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(Box(?: Sync)?)\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = result[1];
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	} else if (result = /^(ViaFree|Viafree)-(?:tvOS-)?[A-Z]{2}\/(\d+)\.(\d+)\.(\d+)/.exec(ua)) {
+		family = "ViaFree";
+		major = result[2];
+		minor = result[3];
+		patch = result[4];
+	}
+  return {
+      family,
+      major,
+      minor,
+      patch
+  };
+}
+},{}],4:[function(require,module,exports){
+const ANY = Symbol('SemVer ANY')
+// hoisted class for cyclic dependency
+class Comparator {
+  static get ANY () {
+    return ANY
+  }
+  constructor (comp, options) {
+    if (!options || typeof options !== 'object') {
+      options = {
+        loose: !!options,
+        includePrerelease: false
+      }
+    }
+
+    if (comp instanceof Comparator) {
+      if (comp.loose === !!options.loose) {
+        return comp
+      } else {
+        comp = comp.value
+      }
+    }
+
+    debug('comparator', comp, options)
+    this.options = options
+    this.loose = !!options.loose
+    this.parse(comp)
+
+    if (this.semver === ANY) {
+      this.value = ''
+    } else {
+      this.value = this.operator + this.semver.version
+    }
+
+    debug('comp', this)
+  }
+
+  parse (comp) {
+    const r = this.options.loose ? re[t.COMPARATORLOOSE] : re[t.COMPARATOR]
+    const m = comp.match(r)
+
+    if (!m) {
+      throw new TypeError(`Invalid comparator: ${comp}`)
+    }
+
+    this.operator = m[1] !== undefined ? m[1] : ''
+    if (this.operator === '=') {
+      this.operator = ''
+    }
+
+    // if it literally is just '>' or '' then allow anything.
+    if (!m[2]) {
+      this.semver = ANY
+    } else {
+      this.semver = new SemVer(m[2], this.options.loose)
+    }
+  }
+
+  toString () {
+    return this.value
+  }
+
+  test (version) {
+    debug('Comparator.test', version, this.options.loose)
+
+    if (this.semver === ANY || version === ANY) {
+      return true
+    }
+
+    if (typeof version === 'string') {
+      try {
+        version = new SemVer(version, this.options)
+      } catch (er) {
+        return false
+      }
+    }
+
+    return cmp(version, this.operator, this.semver, this.options)
+  }
+
+  intersects (comp, options) {
+    if (!(comp instanceof Comparator)) {
+      throw new TypeError('a Comparator is required')
+    }
+
+    if (!options || typeof options !== 'object') {
+      options = {
+        loose: !!options,
+        includePrerelease: false
+      }
+    }
+
+    if (this.operator === '') {
+      if (this.value === '') {
+        return true
+      }
+      return new Range(comp.value, options).test(this.value)
+    } else if (comp.operator === '') {
+      if (comp.value === '') {
+        return true
+      }
+      return new Range(this.value, options).test(comp.semver)
+    }
+
+    const sameDirectionIncreasing =
+      (this.operator === '>=' || this.operator === '>') &&
+      (comp.operator === '>=' || comp.operator === '>')
+    const sameDirectionDecreasing =
+      (this.operator === '<=' || this.operator === '<') &&
+      (comp.operator === '<=' || comp.operator === '<')
+    const sameSemVer = this.semver.version === comp.semver.version
+    const differentDirectionsInclusive =
+      (this.operator === '>=' || this.operator === '<=') &&
+      (comp.operator === '>=' || comp.operator === '<=')
+    const oppositeDirectionsLessThan =
+      cmp(this.semver, '<', comp.semver, options) &&
+      (this.operator === '>=' || this.operator === '>') &&
+        (comp.operator === '<=' || comp.operator === '<')
+    const oppositeDirectionsGreaterThan =
+      cmp(this.semver, '>', comp.semver, options) &&
+      (this.operator === '<=' || this.operator === '<') &&
+        (comp.operator === '>=' || comp.operator === '>')
+
+    return (
+      sameDirectionIncreasing ||
+      sameDirectionDecreasing ||
+      (sameSemVer && differentDirectionsInclusive) ||
+      oppositeDirectionsLessThan ||
+      oppositeDirectionsGreaterThan
+    )
+  }
+}
+
+module.exports = Comparator
+
+const {re, t} = require('../internal/re')
+const cmp = require('../functions/cmp')
+const debug = require('../internal/debug')
+const SemVer = require('./semver')
+const Range = require('./range')
+
+},{"../functions/cmp":8,"../internal/debug":33,"../internal/re":35,"./range":5,"./semver":6}],5:[function(require,module,exports){
+// hoisted class for cyclic dependency
+class Range {
+  constructor (range, options) {
+    if (!options || typeof options !== 'object') {
+      options = {
+        loose: !!options,
+        includePrerelease: false
+      }
+    }
+
+    if (range instanceof Range) {
+      if (
+        range.loose === !!options.loose &&
+        range.includePrerelease === !!options.includePrerelease
+      ) {
+        return range
+      } else {
+        return new Range(range.raw, options)
+      }
+    }
+
+    if (range instanceof Comparator) {
+      // just put it in the set and return
+      this.raw = range.value
+      this.set = [[range]]
+      this.format()
+      return this
+    }
+
+    this.options = options
+    this.loose = !!options.loose
+    this.includePrerelease = !!options.includePrerelease
+
+    // First, split based on boolean or ||
+    this.raw = range
+    this.set = range
+      .split(/\s*\|\|\s*/)
+      // map the range to a 2d array of comparators
+      .map(range => this.parseRange(range.trim()))
+      // throw out any comparator lists that are empty
+      // this generally means that it was not a valid range, which is allowed
+      // in loose mode, but will still throw if the WHOLE range is invalid.
+      .filter(c => c.length)
+
+    if (!this.set.length) {
+      throw new TypeError(`Invalid SemVer Range: ${range}`)
+    }
+
+    this.format()
+  }
+
+  format () {
+    this.range = this.set
+      .map((comps) => {
+        return comps.join(' ').trim()
+      })
+      .join('||')
+      .trim()
+    return this.range
+  }
+
+  toString () {
+    return this.range
+  }
+
+  parseRange (range) {
+    const loose = this.options.loose
+    range = range.trim()
+    // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
+    const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
+    range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
+    debug('hyphen replace', range)
+    // `> 1.2.3 < 1.2.5` => `>1.2.3 <1.2.5`
+    range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace)
+    debug('comparator trim', range, re[t.COMPARATORTRIM])
+
+    // `~ 1.2.3` => `~1.2.3`
+    range = range.replace(re[t.TILDETRIM], tildeTrimReplace)
+
+    // `^ 1.2.3` => `^1.2.3`
+    range = range.replace(re[t.CARETTRIM], caretTrimReplace)
+
+    // normalize spaces
+    range = range.split(/\s+/).join(' ')
+
+    // At this point, the range is completely trimmed and
+    // ready to be split into comparators.
+
+    const compRe = loose ? re[t.COMPARATORLOOSE] : re[t.COMPARATOR]
+    return range
+      .split(' ')
+      .map(comp => parseComparator(comp, this.options))
+      .join(' ')
+      .split(/\s+/)
+      .map(comp => replaceGTE0(comp, this.options))
+      // in loose mode, throw out any that are not valid comparators
+      .filter(this.options.loose ? comp => !!comp.match(compRe) : () => true)
+      .map(comp => new Comparator(comp, this.options))
+  }
+
+  intersects (range, options) {
+    if (!(range instanceof Range)) {
+      throw new TypeError('a Range is required')
+    }
+
+    return this.set.some((thisComparators) => {
+      return (
+        isSatisfiable(thisComparators, options) &&
+        range.set.some((rangeComparators) => {
+          return (
+            isSatisfiable(rangeComparators, options) &&
+            thisComparators.every((thisComparator) => {
+              return rangeComparators.every((rangeComparator) => {
+                return thisComparator.intersects(rangeComparator, options)
+              })
+            })
+          )
+        })
+      )
+    })
+  }
+
+  // if ANY of the sets match ALL of its comparators, then pass
+  test (version) {
+    if (!version) {
+      return false
+    }
+
+    if (typeof version === 'string') {
+      try {
+        version = new SemVer(version, this.options)
+      } catch (er) {
+        return false
+      }
+    }
+
+    for (let i = 0; i < this.set.length; i++) {
+      if (testSet(this.set[i], version, this.options)) {
+        return true
+      }
+    }
+    return false
+  }
+}
+module.exports = Range
+
+const Comparator = require('./comparator')
+const debug = require('../internal/debug')
+const SemVer = require('./semver')
+const {
+  re,
+  t,
+  comparatorTrimReplace,
+  tildeTrimReplace,
+  caretTrimReplace
+} = require('../internal/re')
+
+// take a set of comparators and determine whether there
+// exists a version which can satisfy it
+const isSatisfiable = (comparators, options) => {
+  let result = true
+  const remainingComparators = comparators.slice()
+  let testComparator = remainingComparators.pop()
+
+  while (result && remainingComparators.length) {
+    result = remainingComparators.every((otherComparator) => {
+      return testComparator.intersects(otherComparator, options)
+    })
+
+    testComparator = remainingComparators.pop()
+  }
+
+  return result
+}
+
+// comprised of xranges, tildes, stars, and gtlt's at this point.
+// already replaced the hyphen ranges
+// turn into a set of JUST comparators.
+const parseComparator = (comp, options) => {
+  debug('comp', comp, options)
+  comp = replaceCarets(comp, options)
+  debug('caret', comp)
+  comp = replaceTildes(comp, options)
+  debug('tildes', comp)
+  comp = replaceXRanges(comp, options)
+  debug('xrange', comp)
+  comp = replaceStars(comp, options)
+  debug('stars', comp)
+  return comp
+}
+
+const isX = id => !id || id.toLowerCase() === 'x' || id === '*'
+
+// ~, ~> --> * (any, kinda silly)
+// ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0-0
+// ~2.0, ~2.0.x, ~>2.0, ~>2.0.x --> >=2.0.0 <2.1.0-0
+// ~1.2, ~1.2.x, ~>1.2, ~>1.2.x --> >=1.2.0 <1.3.0-0
+// ~1.2.3, ~>1.2.3 --> >=1.2.3 <1.3.0-0
+// ~1.2.0, ~>1.2.0 --> >=1.2.0 <1.3.0-0
+const replaceTildes = (comp, options) =>
+  comp.trim().split(/\s+/).map((comp) => {
+    return replaceTilde(comp, options)
+  }).join(' ')
+
+const replaceTilde = (comp, options) => {
+  const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE]
+  return comp.replace(r, (_, M, m, p, pr) => {
+    debug('tilde', comp, _, M, m, p, pr)
+    let ret
+
+    if (isX(M)) {
+      ret = ''
+    } else if (isX(m)) {
+      ret = `>=${M}.0.0 <${+M + 1}.0.0-0`
+    } else if (isX(p)) {
+      // ~1.2 == >=1.2.0 <1.3.0-0
+      ret = `>=${M}.${m}.0 <${M}.${+m + 1}.0-0`
+    } else if (pr) {
+      debug('replaceTilde pr', pr)
+      ret = `>=${M}.${m}.${p}-${pr
+      } <${M}.${+m + 1}.0-0`
+    } else {
+      // ~1.2.3 == >=1.2.3 <1.3.0-0
+      ret = `>=${M}.${m}.${p
+      } <${M}.${+m + 1}.0-0`
+    }
+
+    debug('tilde return', ret)
+    return ret
+  })
+}
+
+// ^ --> * (any, kinda silly)
+// ^2, ^2.x, ^2.x.x --> >=2.0.0 <3.0.0-0
+// ^2.0, ^2.0.x --> >=2.0.0 <3.0.0-0
+// ^1.2, ^1.2.x --> >=1.2.0 <2.0.0-0
+// ^1.2.3 --> >=1.2.3 <2.0.0-0
+// ^1.2.0 --> >=1.2.0 <2.0.0-0
+const replaceCarets = (comp, options) =>
+  comp.trim().split(/\s+/).map((comp) => {
+    return replaceCaret(comp, options)
+  }).join(' ')
+
+const replaceCaret = (comp, options) => {
+  debug('caret', comp, options)
+  const r = options.loose ? re[t.CARETLOOSE] : re[t.CARET]
+  const z = options.includePrerelease ? '-0' : ''
+  return comp.replace(r, (_, M, m, p, pr) => {
+    debug('caret', comp, _, M, m, p, pr)
+    let ret
+
+    if (isX(M)) {
+      ret = ''
+    } else if (isX(m)) {
+      ret = `>=${M}.0.0${z} <${+M + 1}.0.0-0`
+    } else if (isX(p)) {
+      if (M === '0') {
+        ret = `>=${M}.${m}.0${z} <${M}.${+m + 1}.0-0`
+      } else {
+        ret = `>=${M}.${m}.0${z} <${+M + 1}.0.0-0`
+      }
+    } else if (pr) {
+      debug('replaceCaret pr', pr)
+      if (M === '0') {
+        if (m === '0') {
+          ret = `>=${M}.${m}.${p}-${pr
+          } <${M}.${m}.${+p + 1}-0`
+        } else {
+          ret = `>=${M}.${m}.${p}-${pr
+          } <${M}.${+m + 1}.0-0`
+        }
+      } else {
+        ret = `>=${M}.${m}.${p}-${pr
+        } <${+M + 1}.0.0-0`
+      }
+    } else {
+      debug('no pr')
+      if (M === '0') {
+        if (m === '0') {
+          ret = `>=${M}.${m}.${p
+          }${z} <${M}.${m}.${+p + 1}-0`
+        } else {
+          ret = `>=${M}.${m}.${p
+          }${z} <${M}.${+m + 1}.0-0`
+        }
+      } else {
+        ret = `>=${M}.${m}.${p
+        } <${+M + 1}.0.0-0`
+      }
+    }
+
+    debug('caret return', ret)
+    return ret
+  })
+}
+
+const replaceXRanges = (comp, options) => {
+  debug('replaceXRanges', comp, options)
+  return comp.split(/\s+/).map((comp) => {
+    return replaceXRange(comp, options)
+  }).join(' ')
+}
+
+const replaceXRange = (comp, options) => {
+  comp = comp.trim()
+  const r = options.loose ? re[t.XRANGELOOSE] : re[t.XRANGE]
+  return comp.replace(r, (ret, gtlt, M, m, p, pr) => {
+    debug('xRange', comp, ret, gtlt, M, m, p, pr)
+    const xM = isX(M)
+    const xm = xM || isX(m)
+    const xp = xm || isX(p)
+    const anyX = xp
+
+    if (gtlt === '=' && anyX) {
+      gtlt = ''
+    }
+
+    // if we're including prereleases in the match, then we need
+    // to fix this to -0, the lowest possible prerelease value
+    pr = options.includePrerelease ? '-0' : ''
+
+    if (xM) {
+      if (gtlt === '>' || gtlt === '<') {
+        // nothing is allowed
+        ret = '<0.0.0-0'
+      } else {
+        // nothing is forbidden
+        ret = '*'
+      }
+    } else if (gtlt && anyX) {
+      // we know patch is an x, because we have any x at all.
+      // replace X with 0
+      if (xm) {
+        m = 0
+      }
+      p = 0
+
+      if (gtlt === '>') {
+        // >1 => >=2.0.0
+        // >1.2 => >=1.3.0
+        gtlt = '>='
+        if (xm) {
+          M = +M + 1
+          m = 0
+          p = 0
+        } else {
+          m = +m + 1
+          p = 0
+        }
+      } else if (gtlt === '<=') {
+        // <=0.7.x is actually <0.8.0, since any 0.7.x should
+        // pass.  Similarly, <=7.x is actually <8.0.0, etc.
+        gtlt = '<'
+        if (xm) {
+          M = +M + 1
+        } else {
+          m = +m + 1
+        }
+      }
+
+      if (gtlt === '<')
+        pr = '-0'
+
+      ret = `${gtlt + M}.${m}.${p}${pr}`
+    } else if (xm) {
+      ret = `>=${M}.0.0${pr} <${+M + 1}.0.0-0`
+    } else if (xp) {
+      ret = `>=${M}.${m}.0${pr
+      } <${M}.${+m + 1}.0-0`
+    }
+
+    debug('xRange return', ret)
+
+    return ret
+  })
+}
+
+// Because * is AND-ed with everything else in the comparator,
+// and '' means "any version", just remove the *s entirely.
+const replaceStars = (comp, options) => {
+  debug('replaceStars', comp, options)
+  // Looseness is ignored here.  star is always as loose as it gets!
+  return comp.trim().replace(re[t.STAR], '')
+}
+
+const replaceGTE0 = (comp, options) => {
+  debug('replaceGTE0', comp, options)
+  return comp.trim()
+    .replace(re[options.includePrerelease ? t.GTE0PRE : t.GTE0], '')
+}
+
+// This function is passed to string.replace(re[t.HYPHENRANGE])
+// M, m, patch, prerelease, build
+// 1.2 - 3.4.5 => >=1.2.0 <=3.4.5
+// 1.2.3 - 3.4 => >=1.2.0 <3.5.0-0 Any 3.4.x will do
+// 1.2 - 3.4 => >=1.2.0 <3.5.0-0
+const hyphenReplace = incPr => ($0,
+  from, fM, fm, fp, fpr, fb,
+  to, tM, tm, tp, tpr, tb) => {
+  if (isX(fM)) {
+    from = ''
+  } else if (isX(fm)) {
+    from = `>=${fM}.0.0${incPr ? '-0' : ''}`
+  } else if (isX(fp)) {
+    from = `>=${fM}.${fm}.0${incPr ? '-0' : ''}`
+  } else if (fpr) {
+    from = `>=${from}`
+  } else {
+    from = `>=${from}${incPr ? '-0' : ''}`
+  }
+
+  if (isX(tM)) {
+    to = ''
+  } else if (isX(tm)) {
+    to = `<${+tM + 1}.0.0-0`
+  } else if (isX(tp)) {
+    to = `<${tM}.${+tm + 1}.0-0`
+  } else if (tpr) {
+    to = `<=${tM}.${tm}.${tp}-${tpr}`
+  } else if (incPr) {
+    to = `<${tM}.${tm}.${+tp + 1}-0`
+  } else {
+    to = `<=${to}`
+  }
+
+  return (`${from} ${to}`).trim()
+}
+
+const testSet = (set, version, options) => {
+  for (let i = 0; i < set.length; i++) {
+    if (!set[i].test(version)) {
+      return false
+    }
+  }
+
+  if (version.prerelease.length && !options.includePrerelease) {
+    // Find the set of versions that are allowed to have prereleases
+    // For example, ^1.2.3-pr.1 desugars to >=1.2.3-pr.1 <2.0.0
+    // That should allow `1.2.3-pr.2` to pass.
+    // However, `1.2.4-alpha.notready` should NOT be allowed,
+    // even though it's within the range set by the comparators.
+    for (let i = 0; i < set.length; i++) {
+      debug(set[i].semver)
+      if (set[i].semver === Comparator.ANY) {
+        continue
+      }
+
+      if (set[i].semver.prerelease.length > 0) {
+        const allowed = set[i].semver
+        if (allowed.major === version.major &&
+            allowed.minor === version.minor &&
+            allowed.patch === version.patch) {
+          return true
+        }
+      }
+    }
+
+    // Version has a -pre, but it's not one of the ones we like.
+    return false
+  }
+
+  return true
+}
+
+},{"../internal/debug":33,"../internal/re":35,"./comparator":4,"./semver":6}],6:[function(require,module,exports){
+const debug = require('../internal/debug')
+const { MAX_LENGTH, MAX_SAFE_INTEGER } = require('../internal/constants')
+const { re, t } = require('../internal/re')
+
+const { compareIdentifiers } = require('../internal/identifiers')
+class SemVer {
+  constructor (version, options) {
+    if (!options || typeof options !== 'object') {
+      options = {
+        loose: !!options,
+        includePrerelease: false
+      }
+    }
+    if (version instanceof SemVer) {
+      if (version.loose === !!options.loose &&
+          version.includePrerelease === !!options.includePrerelease) {
+        return version
+      } else {
+        version = version.version
+      }
+    } else if (typeof version !== 'string') {
+      throw new TypeError(`Invalid Version: ${version}`)
+    }
+
+    if (version.length > MAX_LENGTH) {
+      throw new TypeError(
+        `version is longer than ${MAX_LENGTH} characters`
+      )
+    }
+
+    debug('SemVer', version, options)
+    this.options = options
+    this.loose = !!options.loose
+    // this isn't actually relevant for versions, but keep it so that we
+    // don't run into trouble passing this.options around.
+    this.includePrerelease = !!options.includePrerelease
+
+    const m = version.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL])
+
+    if (!m) {
+      throw new TypeError(`Invalid Version: ${version}`)
+    }
+
+    this.raw = version
+
+    // these are actually numbers
+    this.major = +m[1]
+    this.minor = +m[2]
+    this.patch = +m[3]
+
+    if (this.major > MAX_SAFE_INTEGER || this.major < 0) {
+      throw new TypeError('Invalid major version')
+    }
+
+    if (this.minor > MAX_SAFE_INTEGER || this.minor < 0) {
+      throw new TypeError('Invalid minor version')
+    }
+
+    if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
+      throw new TypeError('Invalid patch version')
+    }
+
+    // numberify any prerelease numeric ids
+    if (!m[4]) {
+      this.prerelease = []
+    } else {
+      this.prerelease = m[4].split('.').map((id) => {
+        if (/^[0-9]+$/.test(id)) {
+          const num = +id
+          if (num >= 0 && num < MAX_SAFE_INTEGER) {
+            return num
+          }
+        }
+        return id
+      })
+    }
+
+    this.build = m[5] ? m[5].split('.') : []
+    this.format()
+  }
+
+  format () {
+    this.version = `${this.major}.${this.minor}.${this.patch}`
+    if (this.prerelease.length) {
+      this.version += `-${this.prerelease.join('.')}`
+    }
+    return this.version
+  }
+
+  toString () {
+    return this.version
+  }
+
+  compare (other) {
+    debug('SemVer.compare', this.version, this.options, other)
+    if (!(other instanceof SemVer)) {
+      if (typeof other === 'string' && other === this.version) {
+        return 0
+      }
+      other = new SemVer(other, this.options)
+    }
+
+    if (other.version === this.version) {
+      return 0
+    }
+
+    return this.compareMain(other) || this.comparePre(other)
+  }
+
+  compareMain (other) {
+    if (!(other instanceof SemVer)) {
+      other = new SemVer(other, this.options)
+    }
+
+    return (
+      compareIdentifiers(this.major, other.major) ||
+      compareIdentifiers(this.minor, other.minor) ||
+      compareIdentifiers(this.patch, other.patch)
+    )
+  }
+
+  comparePre (other) {
+    if (!(other instanceof SemVer)) {
+      other = new SemVer(other, this.options)
+    }
+
+    // NOT having a prerelease is > having one
+    if (this.prerelease.length && !other.prerelease.length) {
+      return -1
+    } else if (!this.prerelease.length && other.prerelease.length) {
+      return 1
+    } else if (!this.prerelease.length && !other.prerelease.length) {
+      return 0
+    }
+
+    let i = 0
+    do {
+      const a = this.prerelease[i]
+      const b = other.prerelease[i]
+      debug('prerelease compare', i, a, b)
+      if (a === undefined && b === undefined) {
+        return 0
+      } else if (b === undefined) {
+        return 1
+      } else if (a === undefined) {
+        return -1
+      } else if (a === b) {
+        continue
+      } else {
+        return compareIdentifiers(a, b)
+      }
+    } while (++i)
+  }
+
+  compareBuild (other) {
+    if (!(other instanceof SemVer)) {
+      other = new SemVer(other, this.options)
+    }
+
+    let i = 0
+    do {
+      const a = this.build[i]
+      const b = other.build[i]
+      debug('prerelease compare', i, a, b)
+      if (a === undefined && b === undefined) {
+        return 0
+      } else if (b === undefined) {
+        return 1
+      } else if (a === undefined) {
+        return -1
+      } else if (a === b) {
+        continue
+      } else {
+        return compareIdentifiers(a, b)
+      }
+    } while (++i)
+  }
+
+  // preminor will bump the version up to the next minor release, and immediately
+  // down to pre-release. premajor and prepatch work the same way.
+  inc (release, identifier) {
+    switch (release) {
+      case 'premajor':
+        this.prerelease.length = 0
+        this.patch = 0
+        this.minor = 0
+        this.major++
+        this.inc('pre', identifier)
+        break
+      case 'preminor':
+        this.prerelease.length = 0
+        this.patch = 0
+        this.minor++
+        this.inc('pre', identifier)
+        break
+      case 'prepatch':
+        // If this is already a prerelease, it will bump to the next version
+        // drop any prereleases that might already exist, since they are not
+        // relevant at this point.
+        this.prerelease.length = 0
+        this.inc('patch', identifier)
+        this.inc('pre', identifier)
+        break
+      // If the input is a non-prerelease version, this acts the same as
+      // prepatch.
+      case 'prerelease':
+        if (this.prerelease.length === 0) {
+          this.inc('patch', identifier)
+        }
+        this.inc('pre', identifier)
+        break
+
+      case 'major':
+        // If this is a pre-major version, bump up to the same major version.
+        // Otherwise increment major.
+        // 1.0.0-5 bumps to 1.0.0
+        // 1.1.0 bumps to 2.0.0
+        if (
+          this.minor !== 0 ||
+          this.patch !== 0 ||
+          this.prerelease.length === 0
+        ) {
+          this.major++
+        }
+        this.minor = 0
+        this.patch = 0
+        this.prerelease = []
+        break
+      case 'minor':
+        // If this is a pre-minor version, bump up to the same minor version.
+        // Otherwise increment minor.
+        // 1.2.0-5 bumps to 1.2.0
+        // 1.2.1 bumps to 1.3.0
+        if (this.patch !== 0 || this.prerelease.length === 0) {
+          this.minor++
+        }
+        this.patch = 0
+        this.prerelease = []
+        break
+      case 'patch':
+        // If this is not a pre-release version, it will increment the patch.
+        // If it is a pre-release it will bump up to the same patch version.
+        // 1.2.0-5 patches to 1.2.0
+        // 1.2.0 patches to 1.2.1
+        if (this.prerelease.length === 0) {
+          this.patch++
+        }
+        this.prerelease = []
+        break
+      // This probably shouldn't be used publicly.
+      // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
+      case 'pre':
+        if (this.prerelease.length === 0) {
+          this.prerelease = [0]
+        } else {
+          let i = this.prerelease.length
+          while (--i >= 0) {
+            if (typeof this.prerelease[i] === 'number') {
+              this.prerelease[i]++
+              i = -2
+            }
+          }
+          if (i === -1) {
+            // didn't increment anything
+            this.prerelease.push(0)
+          }
+        }
+        if (identifier) {
+          // 1.2.0-beta.1 bumps to 1.2.0-beta.2,
+          // 1.2.0-beta.fooblz or 1.2.0-beta bumps to 1.2.0-beta.0
+          if (this.prerelease[0] === identifier) {
+            if (isNaN(this.prerelease[1])) {
+              this.prerelease = [identifier, 0]
+            }
+          } else {
+            this.prerelease = [identifier, 0]
+          }
+        }
+        break
+
+      default:
+        throw new Error(`invalid increment argument: ${release}`)
+    }
+    this.format()
+    this.raw = this.version
+    return this
+  }
+}
+
+module.exports = SemVer
+
+},{"../internal/constants":32,"../internal/debug":33,"../internal/identifiers":34,"../internal/re":35}],7:[function(require,module,exports){
+const parse = require('./parse')
+const clean = (version, options) => {
+  const s = parse(version.trim().replace(/^[=v]+/, ''), options)
+  return s ? s.version : null
+}
+module.exports = clean
+
+},{"./parse":23}],8:[function(require,module,exports){
+const eq = require('./eq')
+const neq = require('./neq')
+const gt = require('./gt')
+const gte = require('./gte')
+const lt = require('./lt')
+const lte = require('./lte')
+
+const cmp = (a, op, b, loose) => {
+  switch (op) {
+    case '===':
+      if (typeof a === 'object')
+        a = a.version
+      if (typeof b === 'object')
+        b = b.version
+      return a === b
+
+    case '!==':
+      if (typeof a === 'object')
+        a = a.version
+      if (typeof b === 'object')
+        b = b.version
+      return a !== b
+
+    case '':
+    case '=':
+    case '==':
+      return eq(a, b, loose)
+
+    case '!=':
+      return neq(a, b, loose)
+
+    case '>':
+      return gt(a, b, loose)
+
+    case '>=':
+      return gte(a, b, loose)
+
+    case '<':
+      return lt(a, b, loose)
+
+    case '<=':
+      return lte(a, b, loose)
+
+    default:
+      throw new TypeError(`Invalid operator: ${op}`)
+  }
+}
+module.exports = cmp
+
+},{"./eq":14,"./gt":15,"./gte":16,"./lt":18,"./lte":19,"./neq":22}],9:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const parse = require('./parse')
+const {re, t} = require('../internal/re')
+
+const coerce = (version, options) => {
+  if (version instanceof SemVer) {
+    return version
+  }
+
+  if (typeof version === 'number') {
+    version = String(version)
+  }
+
+  if (typeof version !== 'string') {
+    return null
+  }
+
+  options = options || {}
+
+  let match = null
+  if (!options.rtl) {
+    match = version.match(re[t.COERCE])
+  } else {
+    // Find the right-most coercible string that does not share
+    // a terminus with a more left-ward coercible string.
+    // Eg, '1.2.3.4' wants to coerce '2.3.4', not '3.4' or '4'
+    //
+    // Walk through the string checking with a /g regexp
+    // Manually set the index so as to pick up overlapping matches.
+    // Stop when we get a match that ends at the string end, since no
+    // coercible string can be more right-ward without the same terminus.
+    let next
+    while ((next = re[t.COERCERTL].exec(version)) &&
+        (!match || match.index + match[0].length !== version.length)
+    ) {
+      if (!match ||
+            next.index + next[0].length !== match.index + match[0].length) {
+        match = next
+      }
+      re[t.COERCERTL].lastIndex = next.index + next[1].length + next[2].length
+    }
+    // leave it in a clean state
+    re[t.COERCERTL].lastIndex = -1
+  }
+
+  if (match === null)
+    return null
+
+  return parse(`${match[2]}.${match[3] || '0'}.${match[4] || '0'}`, options)
+}
+module.exports = coerce
+
+},{"../classes/semver":6,"../internal/re":35,"./parse":23}],10:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const compareBuild = (a, b, loose) => {
+  const versionA = new SemVer(a, loose)
+  const versionB = new SemVer(b, loose)
+  return versionA.compare(versionB) || versionA.compareBuild(versionB)
+}
+module.exports = compareBuild
+
+},{"../classes/semver":6}],11:[function(require,module,exports){
+const compare = require('./compare')
+const compareLoose = (a, b) => compare(a, b, true)
+module.exports = compareLoose
+
+},{"./compare":12}],12:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const compare = (a, b, loose) =>
+  new SemVer(a, loose).compare(new SemVer(b, loose))
+
+module.exports = compare
+
+},{"../classes/semver":6}],13:[function(require,module,exports){
+const parse = require('./parse')
+const eq = require('./eq')
+
+const diff = (version1, version2) => {
+  if (eq(version1, version2)) {
+    return null
+  } else {
+    const v1 = parse(version1)
+    const v2 = parse(version2)
+    const hasPre = v1.prerelease.length || v2.prerelease.length
+    const prefix = hasPre ? 'pre' : ''
+    const defaultResult = hasPre ? 'prerelease' : ''
+    for (const key in v1) {
+      if (key === 'major' || key === 'minor' || key === 'patch') {
+        if (v1[key] !== v2[key]) {
+          return prefix + key
+        }
+      }
+    }
+    return defaultResult // may be undefined
+  }
+}
+module.exports = diff
+
+},{"./eq":14,"./parse":23}],14:[function(require,module,exports){
+const compare = require('./compare')
+const eq = (a, b, loose) => compare(a, b, loose) === 0
+module.exports = eq
+
+},{"./compare":12}],15:[function(require,module,exports){
+const compare = require('./compare')
+const gt = (a, b, loose) => compare(a, b, loose) > 0
+module.exports = gt
+
+},{"./compare":12}],16:[function(require,module,exports){
+const compare = require('./compare')
+const gte = (a, b, loose) => compare(a, b, loose) >= 0
+module.exports = gte
+
+},{"./compare":12}],17:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+
+const inc = (version, release, options, identifier) => {
+  if (typeof (options) === 'string') {
+    identifier = options
+    options = undefined
+  }
+
+  try {
+    return new SemVer(version, options).inc(release, identifier).version
+  } catch (er) {
+    return null
+  }
+}
+module.exports = inc
+
+},{"../classes/semver":6}],18:[function(require,module,exports){
+const compare = require('./compare')
+const lt = (a, b, loose) => compare(a, b, loose) < 0
+module.exports = lt
+
+},{"./compare":12}],19:[function(require,module,exports){
+const compare = require('./compare')
+const lte = (a, b, loose) => compare(a, b, loose) <= 0
+module.exports = lte
+
+},{"./compare":12}],20:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const major = (a, loose) => new SemVer(a, loose).major
+module.exports = major
+
+},{"../classes/semver":6}],21:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const minor = (a, loose) => new SemVer(a, loose).minor
+module.exports = minor
+
+},{"../classes/semver":6}],22:[function(require,module,exports){
+const compare = require('./compare')
+const neq = (a, b, loose) => compare(a, b, loose) !== 0
+module.exports = neq
+
+},{"./compare":12}],23:[function(require,module,exports){
+const {MAX_LENGTH} = require('../internal/constants')
+const { re, t } = require('../internal/re')
+const SemVer = require('../classes/semver')
+
+const parse = (version, options) => {
+  if (!options || typeof options !== 'object') {
+    options = {
+      loose: !!options,
+      includePrerelease: false
+    }
+  }
+
+  if (version instanceof SemVer) {
+    return version
+  }
+
+  if (typeof version !== 'string') {
+    return null
+  }
+
+  if (version.length > MAX_LENGTH) {
+    return null
+  }
+
+  const r = options.loose ? re[t.LOOSE] : re[t.FULL]
+  if (!r.test(version)) {
+    return null
+  }
+
+  try {
+    return new SemVer(version, options)
+  } catch (er) {
+    return null
+  }
+}
+
+module.exports = parse
+
+},{"../classes/semver":6,"../internal/constants":32,"../internal/re":35}],24:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const patch = (a, loose) => new SemVer(a, loose).patch
+module.exports = patch
+
+},{"../classes/semver":6}],25:[function(require,module,exports){
+const parse = require('./parse')
+const prerelease = (version, options) => {
+  const parsed = parse(version, options)
+  return (parsed && parsed.prerelease.length) ? parsed.prerelease : null
+}
+module.exports = prerelease
+
+},{"./parse":23}],26:[function(require,module,exports){
+const compare = require('./compare')
+const rcompare = (a, b, loose) => compare(b, a, loose)
+module.exports = rcompare
+
+},{"./compare":12}],27:[function(require,module,exports){
+const compareBuild = require('./compare-build')
+const rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose))
+module.exports = rsort
+
+},{"./compare-build":10}],28:[function(require,module,exports){
+const Range = require('../classes/range')
+const satisfies = (version, range, options) => {
+  try {
+    range = new Range(range, options)
+  } catch (er) {
+    return false
+  }
+  return range.test(version)
+}
+module.exports = satisfies
+
+},{"../classes/range":5}],29:[function(require,module,exports){
+const compareBuild = require('./compare-build')
+const sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose))
+module.exports = sort
+
+},{"./compare-build":10}],30:[function(require,module,exports){
+const parse = require('./parse')
+const valid = (version, options) => {
+  const v = parse(version, options)
+  return v ? v.version : null
+}
+module.exports = valid
+
+},{"./parse":23}],31:[function(require,module,exports){
+// just pre-load all the stuff that index.js lazily exports
+const internalRe = require('./internal/re')
+module.exports = {
+  re: internalRe.re,
+  src: internalRe.src,
+  tokens: internalRe.t,
+  SEMVER_SPEC_VERSION: require('./internal/constants').SEMVER_SPEC_VERSION,
+  SemVer: require('./classes/semver'),
+  compareIdentifiers: require('./internal/identifiers').compareIdentifiers,
+  rcompareIdentifiers: require('./internal/identifiers').rcompareIdentifiers,
+  parse: require('./functions/parse'),
+  valid: require('./functions/valid'),
+  clean: require('./functions/clean'),
+  inc: require('./functions/inc'),
+  diff: require('./functions/diff'),
+  major: require('./functions/major'),
+  minor: require('./functions/minor'),
+  patch: require('./functions/patch'),
+  prerelease: require('./functions/prerelease'),
+  compare: require('./functions/compare'),
+  rcompare: require('./functions/rcompare'),
+  compareLoose: require('./functions/compare-loose'),
+  compareBuild: require('./functions/compare-build'),
+  sort: require('./functions/sort'),
+  rsort: require('./functions/rsort'),
+  gt: require('./functions/gt'),
+  lt: require('./functions/lt'),
+  eq: require('./functions/eq'),
+  neq: require('./functions/neq'),
+  gte: require('./functions/gte'),
+  lte: require('./functions/lte'),
+  cmp: require('./functions/cmp'),
+  coerce: require('./functions/coerce'),
+  Comparator: require('./classes/comparator'),
+  Range: require('./classes/range'),
+  satisfies: require('./functions/satisfies'),
+  toComparators: require('./ranges/to-comparators'),
+  maxSatisfying: require('./ranges/max-satisfying'),
+  minSatisfying: require('./ranges/min-satisfying'),
+  minVersion: require('./ranges/min-version'),
+  validRange: require('./ranges/valid'),
+  outside: require('./ranges/outside'),
+  gtr: require('./ranges/gtr'),
+  ltr: require('./ranges/ltr'),
+  intersects: require('./ranges/intersects'),
+  simplifyRange: require('./ranges/simplify'),
+  subset: require('./ranges/subset'),
+}
+
+},{"./classes/comparator":4,"./classes/range":5,"./classes/semver":6,"./functions/clean":7,"./functions/cmp":8,"./functions/coerce":9,"./functions/compare":12,"./functions/compare-build":10,"./functions/compare-loose":11,"./functions/diff":13,"./functions/eq":14,"./functions/gt":15,"./functions/gte":16,"./functions/inc":17,"./functions/lt":18,"./functions/lte":19,"./functions/major":20,"./functions/minor":21,"./functions/neq":22,"./functions/parse":23,"./functions/patch":24,"./functions/prerelease":25,"./functions/rcompare":26,"./functions/rsort":27,"./functions/satisfies":28,"./functions/sort":29,"./functions/valid":30,"./internal/constants":32,"./internal/identifiers":34,"./internal/re":35,"./ranges/gtr":36,"./ranges/intersects":37,"./ranges/ltr":38,"./ranges/max-satisfying":39,"./ranges/min-satisfying":40,"./ranges/min-version":41,"./ranges/outside":42,"./ranges/simplify":43,"./ranges/subset":44,"./ranges/to-comparators":45,"./ranges/valid":46}],32:[function(require,module,exports){
+// Note: this is the semver.org version of the spec that it implements
+// Not necessarily the package version of this code.
+const SEMVER_SPEC_VERSION = '2.0.0'
+
+const MAX_LENGTH = 256
+const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
+  /* istanbul ignore next */ 9007199254740991
+
+// Max safe segment length for coercion.
+const MAX_SAFE_COMPONENT_LENGTH = 16
+
+module.exports = {
+  SEMVER_SPEC_VERSION,
+  MAX_LENGTH,
+  MAX_SAFE_INTEGER,
+  MAX_SAFE_COMPONENT_LENGTH
+}
+
+},{}],33:[function(require,module,exports){
+(function (process){
+const debug = (
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_DEBUG &&
+  /\bsemver\b/i.test(process.env.NODE_DEBUG)
+) ? (...args) => console.error('SEMVER', ...args)
+  : () => {}
+
+module.exports = debug
+
+}).call(this,require('_process'))
+},{"_process":1}],34:[function(require,module,exports){
+const numeric = /^[0-9]+$/
+const compareIdentifiers = (a, b) => {
+  const anum = numeric.test(a)
+  const bnum = numeric.test(b)
+
+  if (anum && bnum) {
+    a = +a
+    b = +b
+  }
+
+  return a === b ? 0
+    : (anum && !bnum) ? -1
+    : (bnum && !anum) ? 1
+    : a < b ? -1
+    : 1
+}
+
+const rcompareIdentifiers = (a, b) => compareIdentifiers(b, a)
+
+module.exports = {
+  compareIdentifiers,
+  rcompareIdentifiers
+}
+
+},{}],35:[function(require,module,exports){
+const { MAX_SAFE_COMPONENT_LENGTH } = require('./constants')
+const debug = require('./debug')
+exports = module.exports = {}
+
+// The actual regexps go on exports.re
+const re = exports.re = []
+const src = exports.src = []
+const t = exports.t = {}
+let R = 0
+
+const createToken = (name, value, isGlobal) => {
+  const index = R++
+  debug(index, value)
+  t[name] = index
+  src[index] = value
+  re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
+}
+
+// The following Regular Expressions can be used for tokenizing,
+// validating, and parsing SemVer version strings.
+
+// ## Numeric Identifier
+// A single `0`, or a non-zero digit followed by zero or more digits.
+
+createToken('NUMERICIDENTIFIER', '0|[1-9]\\d*')
+createToken('NUMERICIDENTIFIERLOOSE', '[0-9]+')
+
+// ## Non-numeric Identifier
+// Zero or more digits, followed by a letter or hyphen, and then zero or
+// more letters, digits, or hyphens.
+
+createToken('NONNUMERICIDENTIFIER', '\\d*[a-zA-Z-][a-zA-Z0-9-]*')
+
+// ## Main Version
+// Three dot-separated numeric identifiers.
+
+createToken('MAINVERSION', `(${src[t.NUMERICIDENTIFIER]})\\.` +
+                   `(${src[t.NUMERICIDENTIFIER]})\\.` +
+                   `(${src[t.NUMERICIDENTIFIER]})`)
+
+createToken('MAINVERSIONLOOSE', `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
+                        `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.` +
+                        `(${src[t.NUMERICIDENTIFIERLOOSE]})`)
+
+// ## Pre-release Version Identifier
+// A numeric identifier, or a non-numeric identifier.
+
+createToken('PRERELEASEIDENTIFIER', `(?:${src[t.NUMERICIDENTIFIER]
+}|${src[t.NONNUMERICIDENTIFIER]})`)
+
+createToken('PRERELEASEIDENTIFIERLOOSE', `(?:${src[t.NUMERICIDENTIFIERLOOSE]
+}|${src[t.NONNUMERICIDENTIFIER]})`)
+
+// ## Pre-release Version
+// Hyphen, followed by one or more dot-separated pre-release version
+// identifiers.
+
+createToken('PRERELEASE', `(?:-(${src[t.PRERELEASEIDENTIFIER]
+}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`)
+
+createToken('PRERELEASELOOSE', `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]
+}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`)
+
+// ## Build Metadata Identifier
+// Any combination of digits, letters, or hyphens.
+
+createToken('BUILDIDENTIFIER', '[0-9A-Za-z-]+')
+
+// ## Build Metadata
+// Plus sign, followed by one or more period-separated build metadata
+// identifiers.
+
+createToken('BUILD', `(?:\\+(${src[t.BUILDIDENTIFIER]
+}(?:\\.${src[t.BUILDIDENTIFIER]})*))`)
+
+// ## Full Version String
+// A main version, followed optionally by a pre-release version and
+// build metadata.
+
+// Note that the only major, minor, patch, and pre-release sections of
+// the version string are capturing groups.  The build metadata is not a
+// capturing group, because it should not ever be used in version
+// comparison.
+
+createToken('FULLPLAIN', `v?${src[t.MAINVERSION]
+}${src[t.PRERELEASE]}?${
+  src[t.BUILD]}?`)
+
+createToken('FULL', `^${src[t.FULLPLAIN]}$`)
+
+// like full, but allows v1.2.3 and =1.2.3, which people do sometimes.
+// also, 1.0.0alpha1 (prerelease without the hyphen) which is pretty
+// common in the npm registry.
+createToken('LOOSEPLAIN', `[v=\\s]*${src[t.MAINVERSIONLOOSE]
+}${src[t.PRERELEASELOOSE]}?${
+  src[t.BUILD]}?`)
+
+createToken('LOOSE', `^${src[t.LOOSEPLAIN]}$`)
+
+createToken('GTLT', '((?:<|>)?=?)')
+
+// Something like "2.*" or "1.2.x".
+// Note that "x.x" is a valid xRange identifer, meaning "any version"
+// Only the first item is strictly required.
+createToken('XRANGEIDENTIFIERLOOSE', `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`)
+createToken('XRANGEIDENTIFIER', `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`)
+
+createToken('XRANGEPLAIN', `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:\\.(${src[t.XRANGEIDENTIFIER]})` +
+                   `(?:${src[t.PRERELEASE]})?${
+                     src[t.BUILD]}?` +
+                   `)?)?`)
+
+createToken('XRANGEPLAINLOOSE', `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})` +
+                        `(?:${src[t.PRERELEASELOOSE]})?${
+                          src[t.BUILD]}?` +
+                        `)?)?`)
+
+createToken('XRANGE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`)
+createToken('XRANGELOOSE', `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`)
+
+// Coercion.
+// Extract anything that could conceivably be a part of a valid semver
+createToken('COERCE', `${'(^|[^\\d])' +
+              '(\\d{1,'}${MAX_SAFE_COMPONENT_LENGTH}})` +
+              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
+              `(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?` +
+              `(?:$|[^\\d])`)
+createToken('COERCERTL', src[t.COERCE], true)
+
+// Tilde ranges.
+// Meaning is "reasonably at or greater than"
+createToken('LONETILDE', '(?:~>?)')
+
+createToken('TILDETRIM', `(\\s*)${src[t.LONETILDE]}\\s+`, true)
+exports.tildeTrimReplace = '$1~'
+
+createToken('TILDE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`)
+createToken('TILDELOOSE', `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`)
+
+// Caret ranges.
+// Meaning is "at least and backwards compatible with"
+createToken('LONECARET', '(?:\\^)')
+
+createToken('CARETTRIM', `(\\s*)${src[t.LONECARET]}\\s+`, true)
+exports.caretTrimReplace = '$1^'
+
+createToken('CARET', `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`)
+createToken('CARETLOOSE', `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`)
+
+// A simple gt/lt/eq thing, or just "" to indicate "any version"
+createToken('COMPARATORLOOSE', `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`)
+createToken('COMPARATOR', `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`)
+
+// An expression to strip any whitespace between the gtlt and the thing
+// it modifies, so that `> 1.2.3` ==> `>1.2.3`
+createToken('COMPARATORTRIM', `(\\s*)${src[t.GTLT]
+}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true)
+exports.comparatorTrimReplace = '$1$2$3'
+
+// Something like `1.2.3 - 1.2.4`
+// Note that these all use the loose form, because they'll be
+// checked against either the strict or loose comparator form
+// later.
+createToken('HYPHENRANGE', `^\\s*(${src[t.XRANGEPLAIN]})` +
+                   `\\s+-\\s+` +
+                   `(${src[t.XRANGEPLAIN]})` +
+                   `\\s*$`)
+
+createToken('HYPHENRANGELOOSE', `^\\s*(${src[t.XRANGEPLAINLOOSE]})` +
+                        `\\s+-\\s+` +
+                        `(${src[t.XRANGEPLAINLOOSE]})` +
+                        `\\s*$`)
+
+// Star ranges basically just allow anything at all.
+createToken('STAR', '(<|>)?=?\\s*\\*')
+// >=0.0.0 is like a star
+createToken('GTE0', '^\\s*>=\\s*0\.0\.0\\s*$')
+createToken('GTE0PRE', '^\\s*>=\\s*0\.0\.0-0\\s*$')
+
+},{"./constants":32,"./debug":33}],36:[function(require,module,exports){
+// Determine if version is greater than all the versions possible in the range.
+const outside = require('./outside')
+const gtr = (version, range, options) => outside(version, range, '>', options)
+module.exports = gtr
+
+},{"./outside":42}],37:[function(require,module,exports){
+const Range = require('../classes/range')
+const intersects = (r1, r2, options) => {
+  r1 = new Range(r1, options)
+  r2 = new Range(r2, options)
+  return r1.intersects(r2)
+}
+module.exports = intersects
+
+},{"../classes/range":5}],38:[function(require,module,exports){
+const outside = require('./outside')
+// Determine if version is less than all the versions possible in the range
+const ltr = (version, range, options) => outside(version, range, '<', options)
+module.exports = ltr
+
+},{"./outside":42}],39:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const Range = require('../classes/range')
+
+const maxSatisfying = (versions, range, options) => {
+  let max = null
+  let maxSV = null
+  let rangeObj = null
+  try {
+    rangeObj = new Range(range, options)
+  } catch (er) {
+    return null
+  }
+  versions.forEach((v) => {
+    if (rangeObj.test(v)) {
+      // satisfies(v, range, options)
+      if (!max || maxSV.compare(v) === -1) {
+        // compare(max, v, true)
+        max = v
+        maxSV = new SemVer(max, options)
+      }
+    }
+  })
+  return max
+}
+module.exports = maxSatisfying
+
+},{"../classes/range":5,"../classes/semver":6}],40:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const Range = require('../classes/range')
+const minSatisfying = (versions, range, options) => {
+  let min = null
+  let minSV = null
+  let rangeObj = null
+  try {
+    rangeObj = new Range(range, options)
+  } catch (er) {
+    return null
+  }
+  versions.forEach((v) => {
+    if (rangeObj.test(v)) {
+      // satisfies(v, range, options)
+      if (!min || minSV.compare(v) === 1) {
+        // compare(min, v, true)
+        min = v
+        minSV = new SemVer(min, options)
+      }
+    }
+  })
+  return min
+}
+module.exports = minSatisfying
+
+},{"../classes/range":5,"../classes/semver":6}],41:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const Range = require('../classes/range')
+const gt = require('../functions/gt')
+
+const minVersion = (range, loose) => {
+  range = new Range(range, loose)
+
+  let minver = new SemVer('0.0.0')
+  if (range.test(minver)) {
+    return minver
+  }
+
+  minver = new SemVer('0.0.0-0')
+  if (range.test(minver)) {
+    return minver
+  }
+
+  minver = null
+  for (let i = 0; i < range.set.length; ++i) {
+    const comparators = range.set[i]
+
+    comparators.forEach((comparator) => {
+      // Clone to avoid manipulating the comparator's semver object.
+      const compver = new SemVer(comparator.semver.version)
+      switch (comparator.operator) {
+        case '>':
+          if (compver.prerelease.length === 0) {
+            compver.patch++
+          } else {
+            compver.prerelease.push(0)
+          }
+          compver.raw = compver.format()
+          /* fallthrough */
+        case '':
+        case '>=':
+          if (!minver || gt(minver, compver)) {
+            minver = compver
+          }
+          break
+        case '<':
+        case '<=':
+          /* Ignore maximum versions */
+          break
+        /* istanbul ignore next */
+        default:
+          throw new Error(`Unexpected operation: ${comparator.operator}`)
+      }
+    })
+  }
+
+  if (minver && range.test(minver)) {
+    return minver
+  }
+
+  return null
+}
+module.exports = minVersion
+
+},{"../classes/range":5,"../classes/semver":6,"../functions/gt":15}],42:[function(require,module,exports){
+const SemVer = require('../classes/semver')
+const Comparator = require('../classes/comparator')
+const {ANY} = Comparator
+const Range = require('../classes/range')
+const satisfies = require('../functions/satisfies')
+const gt = require('../functions/gt')
+const lt = require('../functions/lt')
+const lte = require('../functions/lte')
+const gte = require('../functions/gte')
+
+const outside = (version, range, hilo, options) => {
+  version = new SemVer(version, options)
+  range = new Range(range, options)
+
+  let gtfn, ltefn, ltfn, comp, ecomp
+  switch (hilo) {
+    case '>':
+      gtfn = gt
+      ltefn = lte
+      ltfn = lt
+      comp = '>'
+      ecomp = '>='
+      break
+    case '<':
+      gtfn = lt
+      ltefn = gte
+      ltfn = gt
+      comp = '<'
+      ecomp = '<='
+      break
+    default:
+      throw new TypeError('Must provide a hilo val of "<" or ">"')
+  }
+
+  // If it satisifes the range it is not outside
+  if (satisfies(version, range, options)) {
+    return false
+  }
+
+  // From now on, variable terms are as if we're in "gtr" mode.
+  // but note that everything is flipped for the "ltr" function.
+
+  for (let i = 0; i < range.set.length; ++i) {
+    const comparators = range.set[i]
+
+    let high = null
+    let low = null
+
+    comparators.forEach((comparator) => {
+      if (comparator.semver === ANY) {
+        comparator = new Comparator('>=0.0.0')
+      }
+      high = high || comparator
+      low = low || comparator
+      if (gtfn(comparator.semver, high.semver, options)) {
+        high = comparator
+      } else if (ltfn(comparator.semver, low.semver, options)) {
+        low = comparator
+      }
+    })
+
+    // If the edge version comparator has a operator then our version
+    // isn't outside it
+    if (high.operator === comp || high.operator === ecomp) {
+      return false
+    }
+
+    // If the lowest version comparator has an operator and our version
+    // is less than it then it isn't higher than the range
+    if ((!low.operator || low.operator === comp) &&
+        ltefn(version, low.semver)) {
+      return false
+    } else if (low.operator === ecomp && ltfn(version, low.semver)) {
+      return false
+    }
+  }
+  return true
+}
+
+module.exports = outside
+
+},{"../classes/comparator":4,"../classes/range":5,"../classes/semver":6,"../functions/gt":15,"../functions/gte":16,"../functions/lt":18,"../functions/lte":19,"../functions/satisfies":28}],43:[function(require,module,exports){
+// given a set of versions and a range, create a "simplified" range
+// that includes the same versions that the original range does
+// If the original range is shorter than the simplified one, return that.
+const satisfies = require('../functions/satisfies.js')
+const compare = require('../functions/compare.js')
+module.exports = (versions, range, options) => {
+  const set = []
+  let min = null
+  let prev = null
+  const v = versions.sort((a, b) => compare(a, b, options))
+  for (const version of v) {
+    const included = satisfies(version, range, options)
+    if (included) {
+      prev = version
+      if (!min)
+        min = version
+    } else {
+      if (prev) {
+        set.push([min, prev])
+      }
+      prev = null
+      min = null
+    }
+  }
+  if (min)
+    set.push([min, null])
+
+  const ranges = []
+  for (const [min, max] of set) {
+    if (min === max)
+      ranges.push(min)
+    else if (!max && min === v[0])
+      ranges.push('*')
+    else if (!max)
+      ranges.push(`>=${min}`)
+    else if (min === v[0])
+      ranges.push(`<=${max}`)
+    else
+      ranges.push(`${min} - ${max}`)
+  }
+  const simplified = ranges.join(' || ')
+  const original = typeof range.raw === 'string' ? range.raw : String(range)
+  return simplified.length < original.length ? simplified : range
+}
+
+},{"../functions/compare.js":12,"../functions/satisfies.js":28}],44:[function(require,module,exports){
+const Range = require('../classes/range.js')
+const { ANY } = require('../classes/comparator.js')
+const satisfies = require('../functions/satisfies.js')
+const compare = require('../functions/compare.js')
+
+// Complex range `r1 || r2 || ...` is a subset of `R1 || R2 || ...` iff:
+// - Every simple range `r1, r2, ...` is a subset of some `R1, R2, ...`
+//
+// Simple range `c1 c2 ...` is a subset of simple range `C1 C2 ...` iff:
+// - If c is only the ANY comparator
+//   - If C is only the ANY comparator, return true
+//   - Else return false
+// - Let EQ be the set of = comparators in c
+// - If EQ is more than one, return true (null set)
+// - Let GT be the highest > or >= comparator in c
+// - Let LT be the lowest < or <= comparator in c
+// - If GT and LT, and GT.semver > LT.semver, return true (null set)
+// - If EQ
+//   - If GT, and EQ does not satisfy GT, return true (null set)
+//   - If LT, and EQ does not satisfy LT, return true (null set)
+//   - If EQ satisfies every C, return true
+//   - Else return false
+// - If GT
+//   - If GT is lower than any > or >= comp in C, return false
+//   - If GT is >=, and GT.semver does not satisfy every C, return false
+// - If LT
+//   - If LT.semver is greater than that of any > comp in C, return false
+//   - If LT is <=, and LT.semver does not satisfy every C, return false
+// - If any C is a = range, and GT or LT are set, return false
+// - Else return true
+
+const subset = (sub, dom, options) => {
+  sub = new Range(sub, options)
+  dom = new Range(dom, options)
+  let sawNonNull = false
+
+  OUTER: for (const simpleSub of sub.set) {
+    for (const simpleDom of dom.set) {
+      const isSub = simpleSubset(simpleSub, simpleDom, options)
+      sawNonNull = sawNonNull || isSub !== null
+      if (isSub)
+        continue OUTER
+    }
+    // the null set is a subset of everything, but null simple ranges in
+    // a complex range should be ignored.  so if we saw a non-null range,
+    // then we know this isn't a subset, but if EVERY simple range was null,
+    // then it is a subset.
+    if (sawNonNull)
+      return false
+  }
+  return true
+}
+
+const simpleSubset = (sub, dom, options) => {
+  if (sub.length === 1 && sub[0].semver === ANY)
+    return dom.length === 1 && dom[0].semver === ANY
+
+  const eqSet = new Set()
+  let gt, lt
+  for (const c of sub) {
+    if (c.operator === '>' || c.operator === '>=')
+      gt = higherGT(gt, c, options)
+    else if (c.operator === '<' || c.operator === '<=')
+      lt = lowerLT(lt, c, options)
+    else
+      eqSet.add(c.semver)
+  }
+
+  if (eqSet.size > 1)
+    return null
+
+  let gtltComp
+  if (gt && lt) {
+    gtltComp = compare(gt.semver, lt.semver, options)
+    if (gtltComp > 0)
+      return null
+    else if (gtltComp === 0 && (gt.operator !== '>=' || lt.operator !== '<='))
+      return null
+  }
+
+  // will iterate one or zero times
+  for (const eq of eqSet) {
+    if (gt && !satisfies(eq, String(gt), options))
+      return null
+
+    if (lt && !satisfies(eq, String(lt), options))
+      return null
+
+    for (const c of dom) {
+      if (!satisfies(eq, String(c), options))
+        return false
+    }
+    return true
+  }
+
+  let higher, lower
+  let hasDomLT, hasDomGT
+  for (const c of dom) {
+    hasDomGT = hasDomGT || c.operator === '>' || c.operator === '>='
+    hasDomLT = hasDomLT || c.operator === '<' || c.operator === '<='
+    if (gt) {
+      if (c.operator === '>' || c.operator === '>=') {
+        higher = higherGT(gt, c, options)
+        if (higher === c)
+          return false
+      } else if (gt.operator === '>=' && !satisfies(gt.semver, String(c), options))
+        return false
+    }
+    if (lt) {
+      if (c.operator === '<' || c.operator === '<=') {
+        lower = lowerLT(lt, c, options)
+        if (lower === c)
+          return false
+      } else if (lt.operator === '<=' && !satisfies(lt.semver, String(c), options))
+        return false
+    }
+    if (!c.operator && (lt || gt) && gtltComp !== 0)
+      return false
+  }
+
+  // if there was a < or >, and nothing in the dom, then must be false
+  // UNLESS it was limited by another range in the other direction.
+  // Eg, >1.0.0 <1.0.1 is still a subset of <2.0.0
+  if (gt && hasDomLT && !lt && gtltComp !== 0)
+    return false
+
+  if (lt && hasDomGT && !gt && gtltComp !== 0)
+    return false
+
+  return true
+}
+
+// >=1.2.3 is lower than >1.2.3
+const higherGT = (a, b, options) => {
+  if (!a)
+    return b
+  const comp = compare(a.semver, b.semver, options)
+  return comp > 0 ? a
+    : comp < 0 ? b
+    : b.operator === '>' && a.operator === '>=' ? b
+    : a
+}
+
+// <=1.2.3 is higher than <1.2.3
+const lowerLT = (a, b, options) => {
+  if (!a)
+    return b
+  const comp = compare(a.semver, b.semver, options)
+  return comp < 0 ? a
+    : comp > 0 ? b
+    : b.operator === '<' && a.operator === '<=' ? b
+    : a
+}
+
+module.exports = subset
+
+},{"../classes/comparator.js":4,"../classes/range.js":5,"../functions/compare.js":12,"../functions/satisfies.js":28}],45:[function(require,module,exports){
+const Range = require('../classes/range')
+
+// Mostly just for testing and legacy API reasons
+const toComparators = (range, options) =>
+  new Range(range, options).set
+    .map(comp => comp.map(c => c.value).join(' ').trim().split(' '))
+
+module.exports = toComparators
+
+},{"../classes/range":5}],46:[function(require,module,exports){
+const Range = require('../classes/range')
+const validRange = (range, options) => {
+  try {
+    // Return '*' instead of '' so that truthiness works.
+    // This will throw if it's invalid anyway
+    return new Range(range, options).range || '*'
+  } catch (er) {
+    return null
+  }
+}
+module.exports = validRange
+
+},{"../classes/range":5}],47:[function(require,module,exports){
+const UA = require('@financial-times/polyfill-useragent-normaliser');
+document.querySelector('p').textContent = navigator.userAgent + ' => ' + UA.normalize(navigator.userAgent);
+},{"@financial-times/polyfill-useragent-normaliser":2}]},{},[47]);
+</script>
+</body>
+</html>
