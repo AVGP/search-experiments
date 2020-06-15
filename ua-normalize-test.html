@@ -190,6 +190,11 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],2:[function(require,module,exports){
+const UA = require('@financial-times/polyfill-useragent-normaliser');
+document.querySelector('p').textContent = navigator.userAgent + ' => ' + UA.normalize(navigator.userAgent);
+
+
+},{"@financial-times/polyfill-useragent-normaliser":3}],3:[function(require,module,exports){
 "use strict";
 
 const useragent = require("@financial-times/useragent_parser");
@@ -211,7 +216,7 @@ function UA(uaString) {
         family: normalized[1].toLowerCase(),
         major: normalized[2],
         minor: normalized[3] || "0",
-        patch: "0"
+        patch: "0",
       };
     } else {
       // Google Search iOS app should be detected as the underlying browser, which is safari on iOS
@@ -258,6 +263,12 @@ function UA(uaString) {
 
       // Chromium-based Edge
       uaString = uaString.replace(/ Edg\/[\d\.]+\d+/i, "");
+
+      // Modern Googlebot which uses modern Chrome
+      uaString = uaString.replace(
+        / Googlebot\/2\.1; \+http:\/\/www\.google\.com\/bot\.html\) /i,
+        ""
+      );
 
       this.ua = useragent(uaString);
 
@@ -664,42 +675,42 @@ function UA(uaString) {
     (Number(this.ua.major) || 0) + "." + (Number(this.ua.minor) || 0) + ".0";
 }
 
-UA.prototype.getFamily = function() {
+UA.prototype.getFamily = function () {
   return this.ua.family;
 };
 
-UA.prototype.getVersion = function() {
+UA.prototype.getVersion = function () {
   return this.version;
 };
 
-UA.prototype.satisfies = function(range) {
+UA.prototype.satisfies = function (range) {
   return semver.satisfies(this.version, range);
 };
 
-UA.prototype.getBaseline = function() {
+UA.prototype.getBaseline = function () {
   return UA.getBaselines()[this.ua.family];
 };
 
-UA.prototype.meetsBaseline = function() {
+UA.prototype.meetsBaseline = function () {
   return semver.satisfies(
     this.version,
     ">=" + UA.getBaselines()[this.ua.family]
   );
 };
 
-UA.prototype.isUnknown = function() {
+UA.prototype.isUnknown = function () {
   return (
     Object.keys(UA.getBaselines()).indexOf(this.ua.family) === -1 ||
     !this.meetsBaseline()
   );
 };
 
-UA.normalize = function(uaString) {
+UA.normalize = function (uaString) {
   const ua = new UA(uaString);
   return ua.getFamily() + "/" + ua.version;
 };
 
-UA.getBaselines = function() {
+UA.getBaselines = function () {
   return {
     edge: "*",
     edge_mob: "*",
@@ -716,13 +727,13 @@ UA.getBaselines = function() {
     op_mob: "10",
     op_mini: "5",
     bb: "6",
-    samsung_mob: "4"
+    samsung_mob: "4",
   };
 };
 
 module.exports = UA;
 
-},{"@financial-times/useragent_parser":3,"semver":31}],3:[function(require,module,exports){
+},{"@financial-times/useragent_parser":4,"semver":32}],4:[function(require,module,exports){
 module.exports = function useragent_parser(ua) {
   let family = "Other";
   let major;
@@ -2082,7 +2093,7 @@ module.exports = function useragent_parser(ua) {
       patch
   };
 }
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 const ANY = Symbol('SemVer ANY')
 // hoisted class for cyclic dependency
 class Comparator {
@@ -2223,7 +2234,7 @@ const debug = require('../internal/debug')
 const SemVer = require('./semver')
 const Range = require('./range')
 
-},{"../functions/cmp":8,"../internal/debug":33,"../internal/re":35,"./range":5,"./semver":6}],5:[function(require,module,exports){
+},{"../functions/cmp":9,"../internal/debug":34,"../internal/re":36,"./range":6,"./semver":7}],6:[function(require,module,exports){
 // hoisted class for cyclic dependency
 class Range {
   constructor (range, options) {
@@ -2688,7 +2699,7 @@ const testSet = (set, version, options) => {
   return true
 }
 
-},{"../internal/debug":33,"../internal/re":35,"./comparator":4,"./semver":6}],6:[function(require,module,exports){
+},{"../internal/debug":34,"../internal/re":36,"./comparator":5,"./semver":7}],7:[function(require,module,exports){
 const debug = require('../internal/debug')
 const { MAX_LENGTH, MAX_SAFE_INTEGER } = require('../internal/constants')
 const { re, t } = require('../internal/re')
@@ -2980,7 +2991,7 @@ class SemVer {
 
 module.exports = SemVer
 
-},{"../internal/constants":32,"../internal/debug":33,"../internal/identifiers":34,"../internal/re":35}],7:[function(require,module,exports){
+},{"../internal/constants":33,"../internal/debug":34,"../internal/identifiers":35,"../internal/re":36}],8:[function(require,module,exports){
 const parse = require('./parse')
 const clean = (version, options) => {
   const s = parse(version.trim().replace(/^[=v]+/, ''), options)
@@ -2988,7 +2999,7 @@ const clean = (version, options) => {
 }
 module.exports = clean
 
-},{"./parse":23}],8:[function(require,module,exports){
+},{"./parse":24}],9:[function(require,module,exports){
 const eq = require('./eq')
 const neq = require('./neq')
 const gt = require('./gt')
@@ -3038,7 +3049,7 @@ const cmp = (a, op, b, loose) => {
 }
 module.exports = cmp
 
-},{"./eq":14,"./gt":15,"./gte":16,"./lt":18,"./lte":19,"./neq":22}],9:[function(require,module,exports){
+},{"./eq":15,"./gt":16,"./gte":17,"./lt":19,"./lte":20,"./neq":23}],10:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const parse = require('./parse')
 const {re, t} = require('../internal/re')
@@ -3091,7 +3102,7 @@ const coerce = (version, options) => {
 }
 module.exports = coerce
 
-},{"../classes/semver":6,"../internal/re":35,"./parse":23}],10:[function(require,module,exports){
+},{"../classes/semver":7,"../internal/re":36,"./parse":24}],11:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const compareBuild = (a, b, loose) => {
   const versionA = new SemVer(a, loose)
@@ -3100,19 +3111,19 @@ const compareBuild = (a, b, loose) => {
 }
 module.exports = compareBuild
 
-},{"../classes/semver":6}],11:[function(require,module,exports){
+},{"../classes/semver":7}],12:[function(require,module,exports){
 const compare = require('./compare')
 const compareLoose = (a, b) => compare(a, b, true)
 module.exports = compareLoose
 
-},{"./compare":12}],12:[function(require,module,exports){
+},{"./compare":13}],13:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const compare = (a, b, loose) =>
   new SemVer(a, loose).compare(new SemVer(b, loose))
 
 module.exports = compare
 
-},{"../classes/semver":6}],13:[function(require,module,exports){
+},{"../classes/semver":7}],14:[function(require,module,exports){
 const parse = require('./parse')
 const eq = require('./eq')
 
@@ -3137,22 +3148,22 @@ const diff = (version1, version2) => {
 }
 module.exports = diff
 
-},{"./eq":14,"./parse":23}],14:[function(require,module,exports){
+},{"./eq":15,"./parse":24}],15:[function(require,module,exports){
 const compare = require('./compare')
 const eq = (a, b, loose) => compare(a, b, loose) === 0
 module.exports = eq
 
-},{"./compare":12}],15:[function(require,module,exports){
+},{"./compare":13}],16:[function(require,module,exports){
 const compare = require('./compare')
 const gt = (a, b, loose) => compare(a, b, loose) > 0
 module.exports = gt
 
-},{"./compare":12}],16:[function(require,module,exports){
+},{"./compare":13}],17:[function(require,module,exports){
 const compare = require('./compare')
 const gte = (a, b, loose) => compare(a, b, loose) >= 0
 module.exports = gte
 
-},{"./compare":12}],17:[function(require,module,exports){
+},{"./compare":13}],18:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 
 const inc = (version, release, options, identifier) => {
@@ -3169,32 +3180,32 @@ const inc = (version, release, options, identifier) => {
 }
 module.exports = inc
 
-},{"../classes/semver":6}],18:[function(require,module,exports){
+},{"../classes/semver":7}],19:[function(require,module,exports){
 const compare = require('./compare')
 const lt = (a, b, loose) => compare(a, b, loose) < 0
 module.exports = lt
 
-},{"./compare":12}],19:[function(require,module,exports){
+},{"./compare":13}],20:[function(require,module,exports){
 const compare = require('./compare')
 const lte = (a, b, loose) => compare(a, b, loose) <= 0
 module.exports = lte
 
-},{"./compare":12}],20:[function(require,module,exports){
+},{"./compare":13}],21:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const major = (a, loose) => new SemVer(a, loose).major
 module.exports = major
 
-},{"../classes/semver":6}],21:[function(require,module,exports){
+},{"../classes/semver":7}],22:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const minor = (a, loose) => new SemVer(a, loose).minor
 module.exports = minor
 
-},{"../classes/semver":6}],22:[function(require,module,exports){
+},{"../classes/semver":7}],23:[function(require,module,exports){
 const compare = require('./compare')
 const neq = (a, b, loose) => compare(a, b, loose) !== 0
 module.exports = neq
 
-},{"./compare":12}],23:[function(require,module,exports){
+},{"./compare":13}],24:[function(require,module,exports){
 const {MAX_LENGTH} = require('../internal/constants')
 const { re, t } = require('../internal/re')
 const SemVer = require('../classes/semver')
@@ -3233,12 +3244,12 @@ const parse = (version, options) => {
 
 module.exports = parse
 
-},{"../classes/semver":6,"../internal/constants":32,"../internal/re":35}],24:[function(require,module,exports){
+},{"../classes/semver":7,"../internal/constants":33,"../internal/re":36}],25:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const patch = (a, loose) => new SemVer(a, loose).patch
 module.exports = patch
 
-},{"../classes/semver":6}],25:[function(require,module,exports){
+},{"../classes/semver":7}],26:[function(require,module,exports){
 const parse = require('./parse')
 const prerelease = (version, options) => {
   const parsed = parse(version, options)
@@ -3246,17 +3257,17 @@ const prerelease = (version, options) => {
 }
 module.exports = prerelease
 
-},{"./parse":23}],26:[function(require,module,exports){
+},{"./parse":24}],27:[function(require,module,exports){
 const compare = require('./compare')
 const rcompare = (a, b, loose) => compare(b, a, loose)
 module.exports = rcompare
 
-},{"./compare":12}],27:[function(require,module,exports){
+},{"./compare":13}],28:[function(require,module,exports){
 const compareBuild = require('./compare-build')
 const rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose))
 module.exports = rsort
 
-},{"./compare-build":10}],28:[function(require,module,exports){
+},{"./compare-build":11}],29:[function(require,module,exports){
 const Range = require('../classes/range')
 const satisfies = (version, range, options) => {
   try {
@@ -3268,12 +3279,12 @@ const satisfies = (version, range, options) => {
 }
 module.exports = satisfies
 
-},{"../classes/range":5}],29:[function(require,module,exports){
+},{"../classes/range":6}],30:[function(require,module,exports){
 const compareBuild = require('./compare-build')
 const sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose))
 module.exports = sort
 
-},{"./compare-build":10}],30:[function(require,module,exports){
+},{"./compare-build":11}],31:[function(require,module,exports){
 const parse = require('./parse')
 const valid = (version, options) => {
   const v = parse(version, options)
@@ -3281,7 +3292,7 @@ const valid = (version, options) => {
 }
 module.exports = valid
 
-},{"./parse":23}],31:[function(require,module,exports){
+},{"./parse":24}],32:[function(require,module,exports){
 // just pre-load all the stuff that index.js lazily exports
 const internalRe = require('./internal/re')
 module.exports = {
@@ -3331,7 +3342,7 @@ module.exports = {
   subset: require('./ranges/subset'),
 }
 
-},{"./classes/comparator":4,"./classes/range":5,"./classes/semver":6,"./functions/clean":7,"./functions/cmp":8,"./functions/coerce":9,"./functions/compare":12,"./functions/compare-build":10,"./functions/compare-loose":11,"./functions/diff":13,"./functions/eq":14,"./functions/gt":15,"./functions/gte":16,"./functions/inc":17,"./functions/lt":18,"./functions/lte":19,"./functions/major":20,"./functions/minor":21,"./functions/neq":22,"./functions/parse":23,"./functions/patch":24,"./functions/prerelease":25,"./functions/rcompare":26,"./functions/rsort":27,"./functions/satisfies":28,"./functions/sort":29,"./functions/valid":30,"./internal/constants":32,"./internal/identifiers":34,"./internal/re":35,"./ranges/gtr":36,"./ranges/intersects":37,"./ranges/ltr":38,"./ranges/max-satisfying":39,"./ranges/min-satisfying":40,"./ranges/min-version":41,"./ranges/outside":42,"./ranges/simplify":43,"./ranges/subset":44,"./ranges/to-comparators":45,"./ranges/valid":46}],32:[function(require,module,exports){
+},{"./classes/comparator":5,"./classes/range":6,"./classes/semver":7,"./functions/clean":8,"./functions/cmp":9,"./functions/coerce":10,"./functions/compare":13,"./functions/compare-build":11,"./functions/compare-loose":12,"./functions/diff":14,"./functions/eq":15,"./functions/gt":16,"./functions/gte":17,"./functions/inc":18,"./functions/lt":19,"./functions/lte":20,"./functions/major":21,"./functions/minor":22,"./functions/neq":23,"./functions/parse":24,"./functions/patch":25,"./functions/prerelease":26,"./functions/rcompare":27,"./functions/rsort":28,"./functions/satisfies":29,"./functions/sort":30,"./functions/valid":31,"./internal/constants":33,"./internal/identifiers":35,"./internal/re":36,"./ranges/gtr":37,"./ranges/intersects":38,"./ranges/ltr":39,"./ranges/max-satisfying":40,"./ranges/min-satisfying":41,"./ranges/min-version":42,"./ranges/outside":43,"./ranges/simplify":44,"./ranges/subset":45,"./ranges/to-comparators":46,"./ranges/valid":47}],33:[function(require,module,exports){
 // Note: this is the semver.org version of the spec that it implements
 // Not necessarily the package version of this code.
 const SEMVER_SPEC_VERSION = '2.0.0'
@@ -3350,7 +3361,7 @@ module.exports = {
   MAX_SAFE_COMPONENT_LENGTH
 }
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function (process){
 const debug = (
   typeof process === 'object' &&
@@ -3363,7 +3374,7 @@ const debug = (
 module.exports = debug
 
 }).call(this,require('_process'))
-},{"_process":1}],34:[function(require,module,exports){
+},{"_process":1}],35:[function(require,module,exports){
 const numeric = /^[0-9]+$/
 const compareIdentifiers = (a, b) => {
   const anum = numeric.test(a)
@@ -3388,7 +3399,7 @@ module.exports = {
   rcompareIdentifiers
 }
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 const { MAX_SAFE_COMPONENT_LENGTH } = require('./constants')
 const debug = require('./debug')
 exports = module.exports = {}
@@ -3572,13 +3583,13 @@ createToken('STAR', '(<|>)?=?\\s*\\*')
 createToken('GTE0', '^\\s*>=\\s*0\.0\.0\\s*$')
 createToken('GTE0PRE', '^\\s*>=\\s*0\.0\.0-0\\s*$')
 
-},{"./constants":32,"./debug":33}],36:[function(require,module,exports){
+},{"./constants":33,"./debug":34}],37:[function(require,module,exports){
 // Determine if version is greater than all the versions possible in the range.
 const outside = require('./outside')
 const gtr = (version, range, options) => outside(version, range, '>', options)
 module.exports = gtr
 
-},{"./outside":42}],37:[function(require,module,exports){
+},{"./outside":43}],38:[function(require,module,exports){
 const Range = require('../classes/range')
 const intersects = (r1, r2, options) => {
   r1 = new Range(r1, options)
@@ -3587,13 +3598,13 @@ const intersects = (r1, r2, options) => {
 }
 module.exports = intersects
 
-},{"../classes/range":5}],38:[function(require,module,exports){
+},{"../classes/range":6}],39:[function(require,module,exports){
 const outside = require('./outside')
 // Determine if version is less than all the versions possible in the range
 const ltr = (version, range, options) => outside(version, range, '<', options)
 module.exports = ltr
 
-},{"./outside":42}],39:[function(require,module,exports){
+},{"./outside":43}],40:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const Range = require('../classes/range')
 
@@ -3620,7 +3631,7 @@ const maxSatisfying = (versions, range, options) => {
 }
 module.exports = maxSatisfying
 
-},{"../classes/range":5,"../classes/semver":6}],40:[function(require,module,exports){
+},{"../classes/range":6,"../classes/semver":7}],41:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const Range = require('../classes/range')
 const minSatisfying = (versions, range, options) => {
@@ -3646,7 +3657,7 @@ const minSatisfying = (versions, range, options) => {
 }
 module.exports = minSatisfying
 
-},{"../classes/range":5,"../classes/semver":6}],41:[function(require,module,exports){
+},{"../classes/range":6,"../classes/semver":7}],42:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const Range = require('../classes/range')
 const gt = require('../functions/gt')
@@ -3705,7 +3716,7 @@ const minVersion = (range, loose) => {
 }
 module.exports = minVersion
 
-},{"../classes/range":5,"../classes/semver":6,"../functions/gt":15}],42:[function(require,module,exports){
+},{"../classes/range":6,"../classes/semver":7,"../functions/gt":16}],43:[function(require,module,exports){
 const SemVer = require('../classes/semver')
 const Comparator = require('../classes/comparator')
 const {ANY} = Comparator
@@ -3787,7 +3798,7 @@ const outside = (version, range, hilo, options) => {
 
 module.exports = outside
 
-},{"../classes/comparator":4,"../classes/range":5,"../classes/semver":6,"../functions/gt":15,"../functions/gte":16,"../functions/lt":18,"../functions/lte":19,"../functions/satisfies":28}],43:[function(require,module,exports){
+},{"../classes/comparator":5,"../classes/range":6,"../classes/semver":7,"../functions/gt":16,"../functions/gte":17,"../functions/lt":19,"../functions/lte":20,"../functions/satisfies":29}],44:[function(require,module,exports){
 // given a set of versions and a range, create a "simplified" range
 // that includes the same versions that the original range does
 // If the original range is shorter than the simplified one, return that.
@@ -3833,7 +3844,7 @@ module.exports = (versions, range, options) => {
   return simplified.length < original.length ? simplified : range
 }
 
-},{"../functions/compare.js":12,"../functions/satisfies.js":28}],44:[function(require,module,exports){
+},{"../functions/compare.js":13,"../functions/satisfies.js":29}],45:[function(require,module,exports){
 const Range = require('../classes/range.js')
 const { ANY } = require('../classes/comparator.js')
 const satisfies = require('../functions/satisfies.js')
@@ -3990,7 +4001,7 @@ const lowerLT = (a, b, options) => {
 
 module.exports = subset
 
-},{"../classes/comparator.js":4,"../classes/range.js":5,"../functions/compare.js":12,"../functions/satisfies.js":28}],45:[function(require,module,exports){
+},{"../classes/comparator.js":5,"../classes/range.js":6,"../functions/compare.js":13,"../functions/satisfies.js":29}],46:[function(require,module,exports){
 const Range = require('../classes/range')
 
 // Mostly just for testing and legacy API reasons
@@ -4000,7 +4011,7 @@ const toComparators = (range, options) =>
 
 module.exports = toComparators
 
-},{"../classes/range":5}],46:[function(require,module,exports){
+},{"../classes/range":6}],47:[function(require,module,exports){
 const Range = require('../classes/range')
 const validRange = (range, options) => {
   try {
@@ -4013,10 +4024,8 @@ const validRange = (range, options) => {
 }
 module.exports = validRange
 
-},{"../classes/range":5}],47:[function(require,module,exports){
-const UA = require('@financial-times/polyfill-useragent-normaliser');
-document.querySelector('p').textContent = navigator.userAgent + ' => ' + UA.normalize(navigator.userAgent);
-},{"@financial-times/polyfill-useragent-normaliser":2}]},{},[47]);
+},{"../classes/range":6}]},{},[2]);
+
 </script>
 </body>
 </html>
