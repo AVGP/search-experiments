@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+<head>
+  <title>Crawl this, bots!</title>
+  <meta name="viewport" content="width=device-width">
+  <meta name="description" content="A test page for uncrawlable links">
+</head>
+<body>
+<ul>
+  <li><a href="/yolo">Yolo!</a></li>
+  <li><a onclick="alert(1)">Click me</a></li>
+  <li><a onclick="window.location.href='/yolo'">Take me higher</a></li>
+  <li><a onclick="location.href='/yolo'">Oh my apple pie</a></li>
+  <li><a href="javascript:window.location.href='/yolo'">Woot</a></li>
+  <li><a href="javascript:void(0)">Rien ne vas plus</a></li>
+</ul>
+</body>
+</html>
