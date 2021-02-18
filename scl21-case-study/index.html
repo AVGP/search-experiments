@@ -266,21 +266,15 @@
     } else {
       // use lazy-load for mobile users
       document.querySelectorAll('img').forEach(img => {
-        img.className = 'lazyload';
+        img.className = 'lazy';
       });
 
       const lazyloadScript = document.createElement('script')
-      lazyloadScript.src = 'lazysizes-4.1.1.min.js';
-      document.body.appendChild(lazyloadScript);
-
-      /*
-      const lazyloadScript = document.createElement('script')
       lazyloadScript.src = 'lazyload-10.15.0.min.js';
       document.body.appendChild(lazyloadScript);
-      setTimeout(() => new LazyLoad({
+      new LazyLoad({
         elements_selector: ".lazy"
-      }), 2000);
-      */
+      });
     }
   </script>
 </body>
