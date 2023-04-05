@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <h1>This is a source page with push-state</h1>
+    <p>We are using history API to push a new URL.</p>
+    <script>
+      window.onload = function() {
+        window.history.pushState({}, '', './target.html');
+      }
+    </script>
+  </body>
+</html>
