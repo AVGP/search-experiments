@@ -2,8 +2,10 @@
 <html>
   <body>
     <script>
+      const paramNum = new URL(location.href).searchParams.get('chunks')
       const CHUNK_SIZE = 1024 * 1024; // Create 1 MB chunks, please
-      const NUM_CHUNKS = 10;
+      const NUM_CHUNKS = paramNum ? parseInt(paramNum, 10) : 10;
+
       for(let chunkNum=0;chunkNum<NUM_CHUNKS;chunkNum++) {
         var contentChunk = `Chunk #${chunkNum}: `;
         for(let i=0;i<CHUNK_SIZE;i++) {
