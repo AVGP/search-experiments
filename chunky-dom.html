@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <body>
+    <script>
+      const CHUNK_SIZE = 1024 * 1024; // Create 1 MB chunks, please
+      const NUM_CHUNKS = 10;
+      for(let chunkNum=0;chunkNum<NUM_CHUNKS;chunkNum++) {
+        var contentChunk = `Chunk #${chunkNum}: `;
+        for(let i=0;i<CHUNK_SIZE;i++) {
+          contentChunk = contentChunk.concat(String.fromCharCode(97 + Math.floor(Math.random() * 25)))
+        }
+        const p = document.createElement('p');
+        p.textContent = contentChunk;
+        document.body.appendChild(p);
+      }
+    </script>
+  </body>
+</html>
